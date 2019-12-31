@@ -285,7 +285,7 @@ def create_pdf(filename=None):
             out("%i %i %i %i re\nS\n" % r)
             x, y, w, h = r
             d = 13 # font size header
-            out("0.9 0.9 0.9 rg\n")
+            out("0.95 0.95 0.95 rg\n")
             out("%i %i %i %i re\nf\n" % (x, y+h, w, 2*d))
             out("Q\n") # restore state
             out("%i %i %i %i re\nS\n" % (x, y+h, w, 2*d))
