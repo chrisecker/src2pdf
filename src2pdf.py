@@ -4,10 +4,7 @@ import time
 
 twoup = False #True #False
 pagesize = (595.28, 841.89)
-date = time.strftime("%b %d, %y %H:%M")
 fontsize = 11
-import getpass
-username = getpass.getuser()
 
 class Font:
     def __init__(self, subtype, basefont, widths):
@@ -60,8 +57,40 @@ COURIER = Font("Type1", "Courier", _widths)
 COURIER_BOLD = Font("Type1", "Courier-Bold", _widths)
 COURIER_ITALICS = Font("Type1", "Courier-Italics", _widths)
 
-# XXX TODO: extract widths from afm-files
+l = 278,278,278,278,278,278,278,278,278,278,278,278,278,278,278,278,278,278,\
+    278,278,278,278,278,278,278,278,278,278,278,278,278,278,278,278,355,556,\
+    556,889,667,191,333,333,389,584,278,333,278,278,556,556,556,556,556,556,\
+    556,556,556,556,278,278,584,584,584,556,1015,667,667,722,722,667,611,778,\
+    722,278,500,667,556,833,722,778,667,778,722,667,611,722,667,944,667,667,\
+    611,278,278,278,469,556,333,556,556,500,556,556,278,556,556,222,222,500,\
+    222,833,556,556,556,556,333,500,278,556,500,722,500,500,500,334,260,334,\
+    584,350,556,350,222,556,333,1000,556,556,333,1000,667,333,1000,350,611,\
+    350,350,222,222,333,333,350,556,1000,333,1000,500,333,944,350,500,667,278,\
+    333,556,556,556,556,260,556,333,737,370,556,584,333,737,333,400,584,333,\
+    333,333,556,537,278,333,333,365,556,834,834,834,611,667,667,667,667,667,\
+    667,1000,722,667,667,667,667,278,278,278,278,722,722,778,778,778,778,778,\
+    584,778,722,722,722,722,667,667,611,556,556,556,556,556,556,889,500,556,\
+    556,556,556,278,278,278,278,556,556,556,556,556,556,556,584,611,556,556,\
+    556,556,500,556,500
+_widths = {unichr(i) : l[i] for i in range(256)}
 HELVETICA = Font("Type1", "Helvetica-Italics", _widths)
+
+l = 250,250,250,250,250,250,250,250,250,250,250,250,250,250,250,250,250,250,\
+    250,250,250,250,250,250,250,250,250,250,250,250,250,250,250,333,408,500,\
+    500,833,778,180,333,333,500,564,250,333,250,278,500,500,500,500,500,500,\
+    500,500,500,500,278,278,564,564,564,444,921,722,667,667,722,611,556,722,\
+    722,333,389,722,611,889,722,722,556,722,667,556,611,722,722,944,722,722,\
+    611,333,278,333,469,500,333,444,500,444,500,444,333,500,500,278,278,500,\
+    278,778,500,500,500,500,333,389,278,500,500,722,500,500,444,480,200,480,\
+    541,350,500,350,333,500,444,1000,500,500,333,1000,556,333,889,350,611,350,\
+    350,333,333,444,444,350,500,1000,333,980,389,333,722,350,444,722,250,333,\
+    500,500,500,500,200,500,333,760,276,500,564,333,760,333,400,564,300,300,\
+    333,500,453,250,333,300,310,500,750,750,750,444,722,722,722,722,722,722,\
+    889,667,611,611,611,611,333,333,333,333,722,722,722,722,722,722,722,564,\
+    722,722,722,722,722,722,556,500,444,444,444,444,444,444,667,444,444,444,\
+    444,444,278,278,278,278,500,500,500,500,500,500,500,564,500,500,500,500,\
+    500,500,500,500
+_widths = {unichr(i) : l[i] for i in range(256)}
 TIMES = Font("Type1", "Times", _widths)
 
 
@@ -111,7 +140,7 @@ def compute_pieces(filename):
 
     style = {
         Token.Keyword : (COURIER_BOLD, fontsize),
-        Token.Comment.Single : (TIMES, fontsize),
+        Token.Comment.Single : (COURIER_ITALICS, fontsize),
         None : (COURIER, fontsize), # default
     }
     
@@ -219,11 +248,16 @@ def create_pdf(filename=None):
     def out(obj, f=f):
         s = make_s(obj)
         f.write(s)
+        
+    date = time.strftime("%b %d, %y %H:%M")
+    import getpass
+    username = getpass.getuser()
 
     fontnames = {
         COURIER : 'F1',
         COURIER_BOLD : 'F2',
         TIMES : 'F3',
+        COURIER_ITALICS : 'F4',        
         }
     xref = {} #  of tuples (number, id, position)
     pages = [] # list of content ids
@@ -284,7 +318,7 @@ def create_pdf(filename=None):
             out("q\n") # save state
             out("%i %i %i %i re\nS\n" % r)
             x, y, w, h = r
-            d = 13 # font size header
+            d = 11 # font size header
             out("0.95 0.95 0.95 rg\n")
             out("%i %i %i %i re\nf\n" % (x, y+h, w, 2*d))
             out("Q\n") # restore state
@@ -341,18 +375,12 @@ def create_pdf(filename=None):
         else:
             rotate = ""
 
-        out("""
-    << /Parent 2 0 R /Resources << /Font << 
-        /F1 << /Encoding /WinAnsiEncoding /Type /Font 
-               /BaseFont /Courier 
-               /Subtype /Type1 >>
-        /F2 << /Encoding /WinAnsiEncoding /Type /Font 
-               /BaseFont /Courier-Bold 
-               /Subtype /Type1 >>
-        /F3 << /Encoding /WinAnsiEncoding /Type /Font 
-               /BaseFont /Times 
-               /Subtype /Type1 >>
-        >>
+        out("<< /Parent 2 0 R /Resources << /Font << ")
+        for font, key in sorted(fontnames.items(), key=lambda x:x[1]) :
+            out("""        /%s << /Encoding /WinAnsiEncoding /Type /Font 
+               /BaseFont /%s 
+               /Subtype /Type1 >>""" % (key, font.basefont))
+        out("""        >>
       >>
       /MediaBox [ 0 0 595.28 841.89 ]
       %s
@@ -378,16 +406,14 @@ endobj\n""" % ((rotate,)+cref))
     # write the xref table
     startxref = f.tell()
     out('xref\n')
-    out(0)
-    out('%i\n' % (len(xref)+1))
-    out('%010i' % 0); out('65535'); out('f\n')
+    out('0 %i\n' % (len(xref)+1))
+    out('%010i' % 0); out(' 65535'); out(' f\n')
     for ref in sorted(xref.keys()):
         pos = xref[ref]
         version = ref[1]
-        out('%010i' % pos); out('%05i' % version); out('n\n')
+        out('%010i' % pos); out(' %05i' % version); out(' n\n')
 
     # write trailer
-    out('\n')
     out('trailer\n')
     out(dict(Root='1 0 R', Size=len(xref)+1))
     out('startxref\n')
@@ -429,6 +455,11 @@ def test_04():
 
     
 if __name__=='__main__':
-    import alltests
-    alltests.dotests()
-                    
+    if 0:
+        import alltests
+        alltests.dotests()
+    import sys
+    for name in sys.argv[1:]:
+        create_pdf(name)
+        
+    
