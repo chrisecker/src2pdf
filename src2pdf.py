@@ -1,6 +1,13 @@
 # -*- coding: latin-1 -*-
 
+import time
 
+twoup = False #True #False
+pagesize = (595.28, 841.89)
+date = time.strftime("%b %d, %y %H:%M")
+fontsize = 11
+import getpass
+username = getpass.getuser()
 
 class Font:
     def __init__(self, subtype, basefont, widths):
@@ -73,7 +80,7 @@ def build_lines(pieces, max_width):
                 add_nl = True
                 
             first = True
-            for w, ss in font.split(s, 12, max_width-width, max_width):
+            for w, ss in font.split(s, fontsize, max_width-width, max_width):
                 if first:
                     first = False
                 else:
@@ -103,9 +110,9 @@ def compute_pieces(filename):
     from pygments import highlight
 
     style = {
-        Token.Keyword : (COURIER_BOLD, 12),
-        Token.Comment.Single : (TIMES, 12),
-        None : (COURIER, 12), # default
+        Token.Keyword : (COURIER_BOLD, fontsize),
+        Token.Comment.Single : (TIMES, fontsize),
+        None : (COURIER, fontsize), # default
     }
     
     class FontFormatter(Formatter):
@@ -178,7 +185,7 @@ def make_ref(refs):
 
 
 def quote(s):    
-    return s.replace('\\','\\\\').replace(')','\\)').replace('(','\\('). \
+    return s.replace('\\','\\\\').replace(')','\\)').replace('(','\\(').\
         replace('\r','\\r')
 
 def make_s(obj):
@@ -198,7 +205,15 @@ def make_s(obj):
     raise Exception("Wrong type: %s" % repr(obj))
 
 
-def create_pdf(lines):
+def shrink(rect, d):
+    x, y, w, h = rect
+    return (x+d, y+d, w-2*d, h-2*d)
+
+def grow(rect, d):
+    return shrink(rect, -d)
+
+def create_pdf(filename=None):
+    pieces = compute_pieces(filename)
     outname = 'out2.pdf'
     f = open(outname, 'wb')
     def out(obj, f=f):
@@ -213,6 +228,24 @@ def create_pdf(lines):
     xref = {} #  of tuples (number, id, position)
     pages = [] # list of content ids
     refs = set() # used references
+
+    # geometry
+    if twoup:
+        # left_frame = ...
+        # right_frame = ...
+        # lines_per_frame = int(left_frame[3] / fontsize)
+        pass
+    else:
+        pw, ph = pagesize
+        bl = 40
+        br = 40
+        bt = 80
+        bb = 40            
+        frame = bb, bl, pw-bl-br, ph-bt-bb
+        lines_per_frame = int(frame[3] / fontsize)
+        lines = build_lines(pieces, frame[2])
+
+
     
     # header
     out("%PDF-1.3\n%\xC7\xEC\x8F\xA2\n")
@@ -227,9 +260,10 @@ def create_pdf(lines):
 
     # writing the pages    
     pagerefs = []
-
-    lastfontinfo = None
-    for group in build_pages(lines, 25):
+    groups = tuple(build_pages(lines, lines_per_frame))
+    ngroups = len(groups) 
+    for i, group in enumerate(groups):
+        lastfontinfo = None
         cref = make_ref(refs)
         xref[cref] = f.tell()
 
@@ -238,11 +272,44 @@ def create_pdf(lines):
 
         out("<< /Length %i % i R>>\n" % lref)
         out('stream\n')
-        i = f.tell()
+        pos = f.tell()
+
+        if twoup:
+            out("0 0.5 -0.5 0 53.29 0 cm\n")
+            #out("0 1 -1 0 %s 0 cm\n" % pagesize[1])
+            #out("0 1 -1 0 53.2906 32.8 Tm\n") # XXX
+            pass
+        else:
+            r = grow(frame, 2)
+            out("q\n") # save state
+            out("%i %i %i %i re\nS\n" % r)
+            x, y, w, h = r
+            d = 13 # font size header
+            out("0.9 0.9 0.9 rg\n")
+            out("%i %i %i %i re\nf\n" % (x, y+h, w, 2*d))
+            out("Q\n") # restore state
+            out("%i %i %i %i re\nS\n" % (x, y+h, w, 2*d))
+            out("BT /F1 %i Tf %i %i Td (%s)Tj ET\n" % \
+                (d, x+d, y+h+0.5*d, date))
+            if filename:
+                sw = COURIER_BOLD.measure(filename, d)
+                out("BT /F2 %i Tf %i %i Td (%s)Tj ET\n" % \
+                    (d+3, x+0.5*(w-sw), y+h+0.5*d, filename))
+            s = "Page %i/%i" % ((i+1), ngroups)
+            sw = COURIER.measure(filename, d)
+            out("BT /F1 %i Tf %i %i Td (%s)Tj ET\n" % \
+                (d, x+(w-sw), y+h+0.5*d, s))
+            d = 11
+            out("BT /F1 %i Tf %i %i Td (%s)Tj ET\n" % \
+                (d, x, y-d, 'Printed by '+username))
+            
+
+
         out("BT\n")
-        out("%s %s Td\n" % (100, 100))
-        out("0 1 -1 0 53.2906 32.8 Tm\n") # XXX
-        out("12 TL\n") # XXX
+        x0, y0 = frame[:2]
+        y0 += frame[3]-fontsize
+        out("%s %s Td\n" % (x0, y0))
+        out("%i TL\n" % fontsize)
 
         for l in group:
             for s, fontinfo in l:
@@ -254,7 +321,7 @@ def create_pdf(lines):
                 out("(%s)Tj\n" % quote(s).encode('latin-1'))
             out("()'\n")
         out("ET")
-        length = f.tell()-i
+        length = f.tell()-pos
         out("\nendstream\n")
         out("endobj\n")
 
@@ -269,8 +336,13 @@ def create_pdf(lines):
 
         xref[pref] = f.tell()    
         out("%i %i obj\n" % pref)
+        if twoup:
+            rotate = "/Rotate 90\n"
+        else:
+            rotate = ""
+
         out("""
-    << /Parent 2 0 R /Rotate 90 /Resources << /Font << 
+    << /Parent 2 0 R /Resources << /Font << 
         /F1 << /Encoding /WinAnsiEncoding /Type /Font 
                /BaseFont /Courier 
                /Subtype /Type1 >>
@@ -283,11 +355,12 @@ def create_pdf(lines):
         >>
       >>
       /MediaBox [ 0 0 595.28 841.89 ]
+      %s
       /Type /Page /ProcSet [/PDF /Text /ImageB /ImageC /ImageI] 
       /Contents %i %i R 
     >>
-    """ % cref)
-        out("endobj\n")
+endobj\n""" % ((rotate,)+cref))
+        
 
 
     # finally writing the root pages (object 2)
@@ -351,9 +424,8 @@ def test_03():
             print(ansi_colorize(line))
             
 def test_04():
-    pieces = compute_pieces(__file__)
-    lines = build_lines(pieces, 600)
-    create_pdf(lines)
+    filename = __file__
+    create_pdf(filename)
 
     
 if __name__=='__main__':
