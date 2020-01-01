@@ -55,7 +55,7 @@ class Font:
 _widths = {unichr(i) : 600 for i in range(256)}
 COURIER = Font("Type1", "Courier", _widths)
 COURIER_BOLD = Font("Type1", "Courier-Bold", _widths)
-COURIER_ITALICS = Font("Type1", "Courier-Italics", _widths)
+COURIER_OBLIQUE = Font("Type1", "Courier-Oblique", _widths)
 
 l = 278,278,278,278,278,278,278,278,278,278,278,278,278,278,278,278,278,278,\
     278,278,278,278,278,278,278,278,278,278,278,278,278,278,278,278,355,556,\
@@ -140,7 +140,7 @@ def compute_pieces(filename):
 
     style = {
         Token.Keyword : (COURIER_BOLD, fontsize),
-        Token.Comment.Single : (COURIER_ITALICS, fontsize),
+        Token.Comment.Single : (COURIER_OBLIQUE, fontsize),
         None : (COURIER, fontsize), # default
     }
     
@@ -257,7 +257,7 @@ def create_pdf(filename=None):
         COURIER : 'F1',
         COURIER_BOLD : 'F2',
         TIMES : 'F3',
-        COURIER_ITALICS : 'F4',        
+        COURIER_OBLIQUE : 'F4',        
         }
     xref = {} #  of tuples (number, id, position)
     pages = [] # list of content ids
