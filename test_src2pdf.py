@@ -3,6 +3,23 @@
 import src2pdf
 
 
+def ansi_colorize(line):
+    NORMAL = '\x1b[0m'
+    BOLD = '\033[1m'
+    BLUE = '\033[94m'
+    RED = '\033[93m'
+    r = ''
+    for s, (font, size) in line:
+        if font == COURIER:
+            r += s
+        elif font == COURIER_BOLD:
+            r += ''.join([BOLD, s, NORMAL])
+        else:
+            r += ''.join([RED, s, NORMAL])
+    return r
+
+
+
 def create_testpieces():
     import tempfile
     f = tempfile.NamedTemporaryFile(suffix='.py', delete=False)
