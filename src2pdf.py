@@ -166,7 +166,14 @@ def compute_pieces(filename):
 
     style = {
         Token.Keyword : (COURIER_BOLD, fontsize),
+        Token.Name.Builtin.Pseudo : (COURIER_BOLD, fontsize),
         Token.Comment.Single : (COURIER_OBLIQUE, fontsize),
+        Token.Comment : (COURIER_OBLIQUE, fontsize),
+        Token.Literal.String : (COURIER_OBLIQUE, fontsize),
+        Token.Literal.String.Single : (COURIER_OBLIQUE, fontsize),
+        Token.Literal.String.Double : (COURIER_OBLIQUE, fontsize),
+        Token.Literal.String.Escape : (COURIER_OBLIQUE, fontsize),
+        Token.Literal.String.Interpol : (COURIER_OBLIQUE, fontsize),
         None : (COURIER, fontsize), # default
     }
     
@@ -175,6 +182,7 @@ def compute_pieces(filename):
             last = None
             l = []
             for token, text in tokensource:
+                #print token, repr(text)
                 try:
                     fontinfo = style[token]
                 except KeyError:
@@ -188,6 +196,7 @@ def compute_pieces(filename):
 
     formatter = FontFormatter()
     lexer = get_lexer_for_filename(filename)
+    #print lexer
     src = open(filename, 'r').read()
     highlight(src, lexer, formatter)
     return formatter.pieces
