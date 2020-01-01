@@ -1,10 +1,18 @@
-# -*- coding: latin-1 -*-
+#!/usr/bin/env python
+# -*- coding:latin-1 -*-
+
+# TODO:
+# - implement two-up
+# - improve command line interface
 
 import time
+import getpass
+username = getpass.getuser()
 
-twoup = False #True #False
-pagesize = (595.28, 841.89)
+twoup = False
+pagesize = (595.28, 841.89) # A4
 fontsize = 11
+
 
 class Font:
     def __init__(self, subtype, basefont, widths):
@@ -26,13 +34,12 @@ class Font:
         return w*size/1000.0
 
     def split(self, s, fontsize, width0, width1):
-        # splits s such that the size of the resulting pieces is less
-        # than *width*
+        # Splits s such that the size of the resulting pieces is less
+        # than *width*.
         #
-        # Achtung: wenn width kleiner als die Breite von einem Zeichen
-        # ist, dann wird es kompliziert: für die erste Zeile wird ''
-        # zurückgegeben, für alle weiteren wird mindestens ein Zeichen
-        # eingefüllt.
+        # NOTE: if width is smaller than the first character things
+        # are complicated: if we are at the first line, we split
+        # before the character, otherwise behind it.
         maxw = width0
         charwidths = self.widths
         r = [(0, '')]
@@ -73,7 +80,26 @@ l = 278,278,278,278,278,278,278,278,278,278,278,278,278,278,278,278,278,278,\
     556,556,556,278,278,278,278,556,556,556,556,556,556,556,584,611,556,556,\
     556,556,500,556,500
 _widths = {unichr(i) : l[i] for i in range(256)}
-HELVETICA = Font("Type1", "Helvetica-Italics", _widths)
+HELVETICA = Font("Type1", "Helvetica", _widths)
+
+l = 278,278,278,278,278,278,278,278,278,278,278,278,278,278,278,278,278,278,\
+    278,278,278,278,278,278,278,278,278,278,278,278,278,278,278,333,474,556,\
+    556,889,722,238,333,333,389,584,278,333,278,278,556,556,556,556,556,556,\
+    556,556,556,556,333,333,584,584,584,611,975,722,722,722,722,667,611,778,\
+    722,278,556,722,611,833,722,778,667,778,722,667,611,722,667,944,667,667,\
+    611,333,278,333,584,556,333,556,611,556,611,556,333,611,611,278,278,556,\
+    278,889,611,611,611,611,389,556,333,611,556,778,556,556,500,389,280,389,\
+    584,350,556,350,278,556,500,1000,556,556,333,1000,667,333,1000,350,611,\
+    350,350,278,278,500,500,350,556,1000,333,1000,556,333,944,350,500,667,\
+    278,333,556,556,556,556,280,556,333,737,370,556,584,333,737,333,400,584,\
+    333,333,333,611,556,278,333,333,365,556,834,834,834,611,722,722,722,722,\
+    722,722,1000,722,667,667,667,667,278,278,278,278,722,722,778,778,778,778,\
+    778,584,778,722,722,722,722,667,667,611,556,556,556,556,556,556,889,556,\
+    556,556,556,556,278,278,278,278,611,611,611,611,611,611,611,584,611,611,\
+    611,611,611,556,611,556
+
+_widths = {unichr(i) : l[i] for i in range(256)}
+HELVETICA_BOLD = Font("Type1", "Helvetica-Bold", _widths)
 
 l = 250,250,250,250,250,250,250,250,250,250,250,250,250,250,250,250,250,250,\
     250,250,250,250,250,250,250,250,250,250,250,250,250,250,250,333,408,500,\
@@ -183,30 +209,6 @@ def ansi_colorize(line):
     return r
 
 
-def create_testpieces():
-    import tempfile
-    f = tempfile.NamedTemporaryFile(suffix='.py', delete=False)
-    name = f.name
-    f.write("for a in range(10):\n    print a\n")    
-    f.close()    
-    pieces = compute_pieces(name)
-    import os
-    os.remove(name)
-    return pieces
-
-
-def create_randompieces():
-    import random
-    pieces = []
-    for i in range(100):
-        t = ""
-        for i in range(random.randrange(10)):
-            t += random.choice('abc ')
-        font = random.choice([COURIER, COURIER_BOLD])
-        pieces.append((t, (font, 12)))
-    return pieces
-
-
 def make_ref(refs):
     r = len(refs)+1, 0
     refs.add(r)
@@ -217,16 +219,19 @@ def quote(s):
     return s.replace('\\','\\\\').replace(')','\\)').replace('(','\\(').\
         replace('\r','\\r')
 
+
 def make_s(obj):
     if type(obj) == str:
         return obj
     if type(obj) == tuple:
-        # we alsways interpret tuples as references!
+        # we always interpret tuples as references!
         return '%i %i R' % obj
     if type(obj) == list:
+        # we always interpret lists as lists!
         l = [make_s(child) for child in obj]
         return '['+(' '.join(l))+']'
     if type(obj) == dict:
+        # we always interpret dicts as dicts!
         l = ['/'+make_s(k)+' '+make_s(v) for (k, v) in obj.items()]
         return '<<\n'+(' '.join(l))+' >>\n'
     if type(obj) in (int, float):
@@ -238,33 +243,46 @@ def shrink(rect, d):
     x, y, w, h = rect
     return (x+d, y+d, w-2*d, h-2*d)
 
+
 def grow(rect, d):
     return shrink(rect, -d)
 
-def create_pdf(filename=None):
-    pieces = compute_pieces(filename)
-    outname = 'out2.pdf'
-    f = open(outname, 'wb')
+
+def create_pdf(infilename, outfilename):
+    pieces = compute_pieces(infilename)
+    f = open(outfilename, 'wb')
+    
     def out(obj, f=f):
         s = make_s(obj)
         f.write(s)
+
+    def centered(x, y, text, font, size):
+        w = font.measure(text, size)
+        out("BT /%s %i Tf %i %i Td (%s)Tj ET\n" %
+            (fontnames[font], size, x-0.5*w, y, text))
+
+    def right_aligned(x, y, text, font, size):
+        w = font.measure(text, size)
+        out("BT /%s %i Tf %i %i Td (%s)Tj ET\n" %
+            (fontnames[font], size, x-w, y, text))
         
     date = time.strftime("%b %d, %y %H:%M")
-    import getpass
-    username = getpass.getuser()
 
     fontnames = {
         COURIER : 'F1',
         COURIER_BOLD : 'F2',
         TIMES : 'F3',
         COURIER_OBLIQUE : 'F4',        
-        }
+        HELVETICA : 'F5',        
+        HELVETICA_BOLD : 'F6',        
+    }
     xref = {} #  of tuples (number, id, position)
     pages = [] # list of content ids
     refs = set() # used references
 
     # geometry
     if twoup:
+        # XXX not implemented yet
         # left_frame = ...
         # right_frame = ...
         # lines_per_frame = int(left_frame[3] / fontsize)
@@ -279,8 +297,6 @@ def create_pdf(filename=None):
         lines_per_frame = int(frame[3] / fontsize)
         lines = build_lines(pieces, frame[2])
 
-
-    
     # header
     out("%PDF-1.3\n%\xC7\xEC\x8F\xA2\n")
 
@@ -309,11 +325,9 @@ def create_pdf(filename=None):
         pos = f.tell()
 
         if twoup:
-            out("0 0.5 -0.5 0 53.29 0 cm\n")
             #out("0 1 -1 0 %s 0 cm\n" % pagesize[1])
-            #out("0 1 -1 0 53.2906 32.8 Tm\n") # XXX
             pass
-        else:
+        else:                
             r = grow(frame, 2)
             out("q\n") # save state
             out("%i %i %i %i re\nS\n" % r)
@@ -323,22 +337,16 @@ def create_pdf(filename=None):
             out("%i %i %i %i re\nf\n" % (x, y+h, w, 2*d))
             out("Q\n") # restore state
             out("%i %i %i %i re\nS\n" % (x, y+h, w, 2*d))
-            out("BT /F1 %i Tf %i %i Td (%s)Tj ET\n" % \
+            out("BT /F5 %i Tf %i %i Td (%s)Tj ET\n" % \
                 (d, x+d, y+h+0.5*d, date))
-            if filename:
-                sw = COURIER_BOLD.measure(filename, d)
-                out("BT /F2 %i Tf %i %i Td (%s)Tj ET\n" % \
-                    (d+3, x+0.5*(w-sw), y+h+0.5*d, filename))
+            centered(x+0.5*w, y+h+0.5*d, infilename, HELVETICA_BOLD, d+3)
+            
             s = "Page %i/%i" % ((i+1), ngroups)
-            sw = COURIER.measure(filename, d)
-            out("BT /F1 %i Tf %i %i Td (%s)Tj ET\n" % \
-                (d, x+(w-sw), y+h+0.5*d, s))
+            right_aligned(x+w-d, y+h+0.5*d, s, HELVETICA, d)
             d = 11
-            out("BT /F1 %i Tf %i %i Td (%s)Tj ET\n" % \
+            out("BT /F5 %i Tf %i %i Td (%s)Tj ET\n" % \
                 (d, x, y-d, 'Printed by '+username))
             
-
-
         out("BT\n")
         x0, y0 = frame[:2]
         y0 += frame[3]-fontsize
@@ -389,18 +397,16 @@ def create_pdf(filename=None):
     >>
 endobj\n""" % ((rotate,)+cref))
         
-
-
     # finally writing the root pages (object 2)
     kids = ["%i %i R" % ref for ref in pagerefs]
     s = " ".join(kids)
     
     xref[(2, 0)] = f.tell()
     out("2 0 obj\n")
-    w, h = (595.28, 841.89) #doc.size
+    w, h = pagesize
     out(dict(
         Type='/Pages', Kids=kids, Count=len(kids),
-        MediaBox=[0, 0, 595.28, 841.89]))
+        MediaBox=[0, 0, pagesize[0], pagesize[1]]))
     out("endobj\n\n")
     
     # write the xref table
@@ -420,46 +426,20 @@ endobj\n""" % ((rotate,)+cref))
     out('%i\n' % startxref)
     out('%%EOF\n')
     
-def test_00():
-    "Font"
-    font = COURIER
-    splitter = font.split("01234567890123456789", 12, 20, 100)
-    for w, s in splitter:
-        print(w, font.measure(s, 12), s)
 
-    pieces = create_randompieces()
-    for l in build_lines(pieces, 100):
-        print(ansi_colorize(l))
+def startfile(filename):
+    if sys.platform == "win32":
+        os.startfile(filename)
+    else:
+        opener ="open" if sys.platform == "darwin" else "xdg-open"
+        subprocess.call([opener, filename])
 
-def test_01():
-    for token in create_testpieces():
-        print(token)
-
-def test_02():
-    pieces = create_testpieces()
-    for w in (80, 160):
-        print()
-        for line in build_lines(pieces, w):
-            print(ansi_colorize(line))
-
-def test_03():
-    pieces = compute_pieces(__file__)
-    for w in (300,):
-        print()
-        for line in build_lines(pieces, w):
-            print(ansi_colorize(line))
-            
-def test_04():
-    filename = __file__
-    create_pdf(filename)
-
-    
-if __name__=='__main__':
-    if 0:
-        import alltests
-        alltests.dotests()
-    import sys
-    for name in sys.argv[1:]:
-        create_pdf(name)
         
-    
+if __name__=='__main__':
+    import sys, os, subprocess
+    for inname in sys.argv[1:]:
+        base, ext = os.path.splitext(inname)
+        pdfname = base+'.pdf'
+        create_pdf(inname, pdfname)
+        startfile(pdfname)
+        

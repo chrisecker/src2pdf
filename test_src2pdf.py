@@ -2,6 +2,31 @@
 
 import src2pdf
 
+
+def create_testpieces():
+    import tempfile
+    f = tempfile.NamedTemporaryFile(suffix='.py', delete=False)
+    name = f.name
+    f.write("for a in range(10):\n    print a\n")    
+    f.close()    
+    pieces = compute_pieces(name)
+    import os
+    os.remove(name)
+    return pieces
+
+
+def create_randompieces():
+    import random
+    pieces = []
+    for i in range(100):
+        t = ""
+        for i in range(random.randrange(10)):
+            t += random.choice('abc ')
+        font = random.choice([COURIER, COURIER_BOLD])
+        pieces.append((t, (font, 12)))
+    return pieces
+
+
 def test_00():
     "Font"
     font = COURIER
