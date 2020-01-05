@@ -4,6 +4,11 @@
 # TODO:
 # - implement two-up
 # - improve command line interface
+# - allow selection of encoding
+# - allow selection of lexer
+# - list encodings
+# - list lexers
+
 
 import time
 import getpass
@@ -160,7 +165,7 @@ def build_pages(lines, linesperpage):
 
 def compute_pieces(filename):
     from pygments.formatter import Formatter
-    from pygments.lexers import get_lexer_for_filename
+    from pygments.lexers import guess_lexer_for_filename, get_lexer_by_name
     from pygments import token as Token
     from pygments import highlight
 
@@ -195,9 +200,9 @@ def compute_pieces(filename):
             self.pieces = l
 
     formatter = FontFormatter()
-    lexer = get_lexer_for_filename(filename)
-    #print lexer
     src = open(filename, 'r').read()
+    lexer = guess_lexer_for_filename(filename, src)
+    #print lexer
     highlight(src, lexer, formatter)
     return formatter.pieces
 
