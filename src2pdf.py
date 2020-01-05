@@ -297,9 +297,7 @@ def create_pdf(infilename, outfilename):
         pwh = 0.5*pw
         w = pwh-bl-0.5*br
         print "ph=", ph, "-> h=", ph-bt-bb
-        left_frame = bb, bl, w, ph-bt-bb
-        #right_frame = bb+w+br, bl, w, ph-bt-bb
-        frame = left_frame
+        frame = bb, bl, w, ph-bt-bb
         lines = build_lines(pieces, frame[2])
         lines_per_frame = int(frame[3] / fontsize)
     else:
@@ -350,7 +348,7 @@ def create_pdf(infilename, outfilename):
         pos = f.tell()
         
         for j, frame_group in enumerate(page_group):
-            print "frame %i contains %i lines" % (j, len(frame_group))
+            #print "frame %i contains %i lines" % (j, len(frame_group))
             out("q\n") # save state
             if twoup:
                 if j % 2 == 0:
@@ -363,7 +361,7 @@ def create_pdf(infilename, outfilename):
                 out("%i %i %i %i re\nS\n" % frame)
                 out("%i %i %i %i re\nS\n" % (frame[:2]+(10, 10)))
 
-            if 1: # draw frame
+            if 1: # draw frame XXX should be modified for 2up
                 r = grow(frame, 2)
                 out("q\n") # save state
                 out("%i %i %i %i re\nS\n" % r)
