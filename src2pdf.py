@@ -14,7 +14,7 @@ import time
 import getpass
 username = getpass.getuser()
 
-twoup = False
+twoup = True # False
 pagesize = (595.28, 841.89) # A4
 fontsize = 11
 
@@ -152,16 +152,18 @@ def build_lines(pieces, max_width):
                     line.append((ss, (font, fontsize)))
                     width += w
 
-def build_pages(lines, linesperpage):
+
+def ngroup(l, n):
+    # split l into tuples of size n
     r = []
-    for line in lines:
-        r.append(line)
-        if len(r)>=linesperpage:
+    for x in l:
+        r.append(x)
+        if len(r) >= n:
             yield r
             r = []
     if r:
         yield r
-        
+
 
 def compute_pieces(filename):
     from pygments.formatter import Formatter
@@ -219,6 +221,7 @@ def quote(s):
 
 
 def make_s(obj):
+    # Create string representation for obj
     if type(obj) == str:
         return obj
     if type(obj) == tuple:
@@ -238,11 +241,13 @@ def make_s(obj):
 
 
 def shrink(rect, d):
+    # Shrink rectangle rect by amount d
     x, y, w, h = rect
     return (x+d, y+d, w-2*d, h-2*d)
 
 
 def grow(rect, d):
+    # Grow rectangle rect by amount d
     return shrink(rect, -d)
 
 
@@ -280,11 +285,23 @@ def create_pdf(infilename, outfilename):
 
     # geometry
     if twoup:
+        ph, pw = pagesize
         # XXX not implemented yet
         # left_frame = ...
         # right_frame = ...
         # lines_per_frame = int(left_frame[3] / fontsize)
-        pass
+        bl = 40
+        br = 40
+        bt = 80
+        bb = 40
+        pwh = 0.5*pw
+        w = pwh-bl-0.5*br
+        print "ph=", ph, "-> h=", ph-bt-bb
+        left_frame = bb, bl, w, ph-bt-bb
+        #right_frame = bb+w+br, bl, w, ph-bt-bb
+        frame = left_frame
+        lines = build_lines(pieces, frame[2])
+        lines_per_frame = int(frame[3] / fontsize)
     else:
         pw, ph = pagesize
         bl = 40
@@ -308,9 +325,19 @@ def create_pdf(infilename, outfilename):
 
     # writing the pages    
     pagerefs = []
-    groups = tuple(build_pages(lines, lines_per_frame))
-    ngroups = len(groups) 
-    for i, group in enumerate(groups):
+    frame_groups = tuple(ngroup(lines, lines_per_frame))
+    if twoup:
+        frames_per_page = 2
+    else:
+        frames_per_page = 1
+        
+    page_groups = tuple(ngroup(frame_groups, frames_per_page))
+    nframes = len(frame_groups)
+    npages = len(page_groups)
+    ngroups = nframes
+
+    for i, page_group in enumerate(page_groups):
+        print "page %i: contains %i frames" % (i, len(page_group))
         lastfontinfo = None
         cref = make_ref(refs)
         xref[cref] = f.tell()
@@ -321,46 +348,60 @@ def create_pdf(infilename, outfilename):
         out("<< /Length %i % i R>>\n" % lref)
         out('stream\n')
         pos = f.tell()
-
-        if twoup:
-            #out("0 1 -1 0 %s 0 cm\n" % pagesize[1])
-            pass
-        else:                
-            r = grow(frame, 2)
+        
+        for j, frame_group in enumerate(page_group):
+            print "frame %i contains %i lines" % (j, len(frame_group))
             out("q\n") # save state
-            out("%i %i %i %i re\nS\n" % r)
-            x, y, w, h = r
-            d = 11 # font size header
-            out("0.95 0.95 0.95 rg\n")
-            out("%i %i %i %i re\nf\n" % (x, y+h, w, 2*d))
-            out("Q\n") # restore state
-            out("%i %i %i %i re\nS\n" % (x, y+h, w, 2*d))
-            out("BT /F5 %i Tf %i %i Td (%s)Tj ET\n" % \
-                (d, x+d, y+h+0.5*d, date))
-            centered(x+0.5*w, y+h+0.5*d, infilename, HELVETICA_BOLD, d+3)
-            
-            s = "Page %i/%i" % ((i+1), ngroups)
-            right_aligned(x+w-d, y+h+0.5*d, s, HELVETICA, d)
-            d = 11
-            out("BT /F5 %i Tf %i %i Td (%s)Tj ET\n" % \
-                (d, x, y-d, 'Printed by '+username))
-            
-        out("BT\n")
-        x0, y0 = frame[:2]
-        y0 += frame[3]-fontsize
-        out("%s %s Td\n" % (x0, y0))
-        out("%i TL\n" % fontsize)
+            if twoup:
+                if j % 2 == 0:
+                    out("0 1 -1 0 %s 0 cm\n" % pagesize[0])
+                else:
+                    out("0 1 -1 0 %s %s cm\n" % (pagesize[0], 0.5*pagesize[1]))
+                
+            if 0:
+                print frame            
+                out("%i %i %i %i re\nS\n" % frame)
+                out("%i %i %i %i re\nS\n" % (frame[:2]+(10, 10)))
 
-        for l in group:
-            for s, fontinfo in l:
-                if fontinfo != lastfontinfo:
-                    font, size = fontinfo
-                    fontname = fontnames[font]
-                    out("/%s %s Tf\n" % (fontname, size))
-                    lastfontinfo = fontinfo
-                out("(%s)Tj\n" % quote(s).encode('latin-1'))
-            out("()'\n")
-        out("ET")
+            if 1: # draw frame
+                r = grow(frame, 2)
+                out("q\n") # save state
+                out("%i %i %i %i re\nS\n" % r)
+                x, y, w, h = r
+                d = 11 # font size header
+                out("0.95 0.95 0.95 rg\n")
+                out("%i %i %i %i re\nf\n" % (x, y+h, w, 2*d))
+                out("Q\n") # restore state
+                out("%i %i %i %i re\nS\n" % (x, y+h, w, 2*d))
+                out("BT /F5 %i Tf %i %i Td (%s)Tj ET\n" % \
+                    (d, x+d, y+h+0.5*d, date))
+                centered(x+0.5*w, y+h+0.5*d, infilename, HELVETICA_BOLD, d+3)
+
+                s = "Page %i/%i" % ((i+1), ngroups)
+                right_aligned(x+w-d, y+h+0.5*d, s, HELVETICA, d)
+                d = 11
+                out("BT /F5 %i Tf %i %i Td (%s)Tj ET\n" % \
+                    (d, x, y-d, 'Printed by '+username))
+            
+            out("BT\n")
+            x0, y0 = frame[:2]
+            y0 += frame[3]-fontsize
+            out("%s %s Td\n" % (x0, y0))
+            out("%i TL\n" % fontsize)
+
+            for l in frame_group:
+                #print l
+                for s, fontinfo in l:
+                    if fontinfo != lastfontinfo:
+                        font, size = fontinfo
+                        fontname = fontnames[font]
+                        out("/%s %s Tf\n" % (fontname, size))
+                        lastfontinfo = fontinfo
+                    out("(%s)Tj\n" % quote(s).encode('latin-1'))
+                out("()'\n")
+            out("ET\n")
+            out("Q\n") # restore state
+
         length = f.tell()-pos
         out("\nendstream\n")
         out("endobj\n")
