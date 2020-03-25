@@ -2,8 +2,6 @@
 # -*- coding:latin-1 -*-
 
 # TODO:
-# - implement two-up
-# - improve command line interface
 # - allow selection of encoding
 # - allow selection of lexer
 # - list encodings
@@ -11,12 +9,11 @@
 
 
 import time
+import os
 import getpass
-username = getpass.getuser()
 
-twoup = True # False
+username = getpass.getuser()
 pagesize = (595.28, 841.89) # A4
-fontsize = 11
 
 
 class Font:
@@ -126,7 +123,7 @@ TIMES = Font("Type1", "Times", _widths)
 
 
 def build_lines(pieces, max_width):
-    "A piece is a tuple (string, font)"
+    # A piece is a tuple (string, font)
     line = []
     width = 0
     for text, (font, fontsize) in pieces:
@@ -154,7 +151,7 @@ def build_lines(pieces, max_width):
 
 
 def ngroup(l, n):
-    # split l into tuples of size n
+    # Split l into tuples of size n
     r = []
     for x in l:
         r.append(x)
@@ -165,7 +162,7 @@ def ngroup(l, n):
         yield r
 
 
-def compute_pieces(filename):
+def compute_pieces(filename, fontsize):
     from pygments.formatter import Formatter
     from pygments.lexers import guess_lexer_for_filename, get_lexer_by_name
     from pygments import token as Token
@@ -189,7 +186,6 @@ def compute_pieces(filename):
             last = None
             l = []
             for token, text in tokensource:
-                #print token, repr(text)
                 try:
                     fontinfo = style[token]
                 except KeyError:
@@ -204,7 +200,6 @@ def compute_pieces(filename):
     formatter = FontFormatter()
     src = open(filename, 'r').read()
     lexer = guess_lexer_for_filename(filename, src)
-    #print lexer
     highlight(src, lexer, formatter)
     return formatter.pieces
 
@@ -224,6 +219,8 @@ def make_s(obj):
     # Create string representation for obj
     if type(obj) == str:
         return obj
+    if type(obj) == unicode:
+        return obj.encode('latin-1') # XXX add ignore-flag?
     if type(obj) == tuple:
         # we always interpret tuples as references!
         return '%i %i R' % obj
@@ -251,10 +248,13 @@ def grow(rect, d):
     return shrink(rect, -d)
 
 
-def create_pdf(infilename, outfilename):
-    pieces = compute_pieces(infilename)
+def create_pdf(infilename, outfilename, twoup, fontsize):
+    pieces = compute_pieces(infilename, fontsize)
     f = open(outfilename, 'wb')
-    
+    t = time.localtime(os.path.getmtime(infilename))
+    file_date = time.strftime("%b %d, %y %H:%M", t)
+    date = time.strftime("%b %d, %y %H:%M")
+
     def out(obj, f=f):
         s = make_s(obj)
         f.write(s)
@@ -269,7 +269,6 @@ def create_pdf(infilename, outfilename):
         out("BT /%s %i Tf %i %i Td (%s)Tj ET\n" %
             (fontnames[font], size, x-w, y, text))
         
-    date = time.strftime("%b %d, %y %H:%M")
 
     fontnames = {
         COURIER : 'F1',
@@ -286,20 +285,17 @@ def create_pdf(infilename, outfilename):
     # geometry
     if twoup:
         ph, pw = pagesize
-        # XXX not implemented yet
-        # left_frame = ...
-        # right_frame = ...
-        # lines_per_frame = int(left_frame[3] / fontsize)
-        bl = 40
-        br = 40
-        bt = 80
+        bl = 25
+        br = 5
+        bt = 60
         bb = 40
         pwh = 0.5*pw
-        w = pwh-bl-0.5*br
-        print "ph=", ph, "-> h=", ph-bt-bb
-        frame = bb, bl, w, ph-bt-bb
-        lines = build_lines(pieces, frame[2])
-        lines_per_frame = int(frame[3] / fontsize)
+        w = pwh-bl-br
+        left_frame = bl, bb, w, ph-bt-bb        
+        right_frame = pwh+br, bb, w, ph-bt-bb
+        outer_frame = bl, bb, pwh+br+w-bl, ph-bt-bb
+        lines = build_lines(pieces, left_frame[2])
+        lines_per_frame = int(left_frame[3] / fontsize)
     else:
         pw, ph = pagesize
         bl = 40
@@ -307,6 +303,7 @@ def create_pdf(infilename, outfilename):
         bt = 80
         bb = 40            
         frame = bb, bl, pw-bl-br, ph-bt-bb
+        outer_frame = frame
         lines_per_frame = int(frame[3] / fontsize)
         lines = build_lines(pieces, frame[2])
 
@@ -334,9 +331,8 @@ def create_pdf(infilename, outfilename):
     npages = len(page_groups)
     ngroups = nframes
 
+    iframe = 0
     for i, page_group in enumerate(page_groups):
-        print "page %i: contains %i frames" % (i, len(page_group))
-        lastfontinfo = None
         cref = make_ref(refs)
         xref[cref] = f.tell()
 
@@ -346,40 +342,46 @@ def create_pdf(infilename, outfilename):
         out("<< /Length %i % i R>>\n" % lref)
         out('stream\n')
         pos = f.tell()
+
+        out("q\n") # save state
+        if twoup:
+            out("0 1 -1 0 %s 0 cm\n" % pagesize[0])
+        d = 9
+        x, y = outer_frame[:2]
+        out("BT /F5 %i Tf %i %i Td (%s)Tj ET\n" % \
+            (d, x, y-d-2, 'Printed by '+username))
+        x += outer_frame[2]
+        right_aligned(x, y-d-2, date, HELVETICA, d)
+
         
         for j, frame_group in enumerate(page_group):
-            #print "frame %i contains %i lines" % (j, len(frame_group))
-            out("q\n") # save state
+            iframe += 1
             if twoup:
-                if j % 2 == 0:
-                    out("0 1 -1 0 %s 0 cm\n" % pagesize[0])
+                if j == 0:
+                    frame = left_frame
                 else:
-                    out("0 1 -1 0 %s %s cm\n" % (pagesize[0], 0.5*pagesize[1]))
+                    frame = right_frame
                 
             if 0:
                 print frame            
                 out("%i %i %i %i re\nS\n" % frame)
                 out("%i %i %i %i re\nS\n" % (frame[:2]+(10, 10)))
 
-            if 1: # draw frame XXX should be modified for 2up
-                r = grow(frame, 2)
-                out("q\n") # save state
-                out("%i %i %i %i re\nS\n" % r)
-                x, y, w, h = r
-                d = 11 # font size header
-                out("0.95 0.95 0.95 rg\n")
-                out("%i %i %i %i re\nf\n" % (x, y+h, w, 2*d))
-                out("Q\n") # restore state
-                out("%i %i %i %i re\nS\n" % (x, y+h, w, 2*d))
-                out("BT /F5 %i Tf %i %i Td (%s)Tj ET\n" % \
-                    (d, x+d, y+h+0.5*d, date))
-                centered(x+0.5*w, y+h+0.5*d, infilename, HELVETICA_BOLD, d+3)
-
-                s = "Page %i/%i" % ((i+1), ngroups)
-                right_aligned(x+w-d, y+h+0.5*d, s, HELVETICA, d)
-                d = 11
-                out("BT /F5 %i Tf %i %i Td (%s)Tj ET\n" % \
-                    (d, x, y-d, 'Printed by '+username))
+            r = grow(frame, 2)
+            out("q\n") # save state
+            out("%i %i %i %i re\nS\n" % r)
+            x, y, w, h = r
+            d = 9 # font size header
+            out("0.95 0.95 0.95 rg\n")
+            out("%i %i %i %i re\nf\n" % (x, y+h, w, 1.9*d))
+            out("Q\n") # restore state
+            out("%i %i %i %i re\nS\n" % (x, y+h, w, 1.9*d))
+            out("BT /F5 %i Tf %i %i Td (%s)Tj ET\n" % \
+                (d, x+d, y+h+0.5*d, file_date))
+            centered(x+0.5*w, y+h+0.5*d, infilename, HELVETICA_BOLD, d+3)
+            
+            s = "Page %i/%i" % (iframe, ngroups)
+            right_aligned(x+w-d, y+h+0.5*d, s, HELVETICA, d)
             
             out("BT\n")
             x0, y0 = frame[:2]
@@ -387,6 +389,7 @@ def create_pdf(infilename, outfilename):
             out("%s %s Td\n" % (x0, y0))
             out("%i TL\n" % fontsize)
 
+            lastfontinfo = None
             for l in frame_group:
                 #print l
                 for s, fontinfo in l:
@@ -398,7 +401,7 @@ def create_pdf(infilename, outfilename):
                     out("(%s)Tj\n" % quote(s).encode('latin-1'))
                 out("()'\n")
             out("ET\n")
-            out("Q\n") # restore state
+        out("Q\n") # restore state
 
         length = f.tell()-pos
         out("\nendstream\n")
@@ -465,18 +468,32 @@ endobj\n""" % ((rotate,)+cref))
     
 
 def startfile(filename):
+    import sys, subprocess
     if sys.platform == "win32":
         os.startfile(filename)
     else:
         opener ="open" if sys.platform == "darwin" else "xdg-open"
         subprocess.call([opener, filename])
 
+from entrypoint2 import entrypoint
+@entrypoint
+def main(srcfile, outfile=None, dont_view=False, single_page=False,
+         fontsize=None):
+    twoup = not single_page
+
+    if fontsize is None:
+        if twoup:
+            fontsize = 8
+        else:
+            fontsize = 10
+            
+    if outfile is None:
+        base, ext = os.path.splitext(srcfile)
+        outfile = base+'.pdf'
         
-if __name__=='__main__':
-    import sys, os, subprocess
-    for inname in sys.argv[1:]:
-        base, ext = os.path.splitext(inname)
-        pdfname = base+'.pdf'
-        create_pdf(inname, pdfname)
-        startfile(pdfname)
+    create_pdf(srcfile, outfile, twoup, fontsize)
+    if not dont_view:
+        startfile(outfile)
+
+    
         
