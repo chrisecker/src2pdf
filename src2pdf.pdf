@@ -1,0 +1,2372 @@
+%PDF-1.3
+%«Ïè¢
+1 0 obj
+  << /Type /Catalog
+ /Pages 2 0 R >> 
+endobj
+
+3 0 obj
+<< /Length 4  0 R>>
+stream
+q
+0 1 -1 0 595.28 0 cm
+BT /F5 9 Tf 25 29 Td (Printed by ecker)Tj ET
+BT /F5 9 Tf 748 29 Td (Mar 25, 20 22:37)Tj ET
+q
+23 38 394 499 re
+S
+0.95 0.95 0.95 rg
+23 537 394 17 re
+f
+Q
+23 537 394 17 re
+S
+BT /F5 9 Tf 32 541 Td (Mar 25, 20 22:18)Tj ET
+BT /F6 12 Tf 190 541 Td (src2pdf.py)Tj ET
+BT /F5 9 Tf 372 541 Td (Page 1/9)Tj ET
+BT
+25 527.28 Td
+8 TL
+/F1 8 Tf
+(#!/usr/bin/env python)Tj
+()'
+/F4 8 Tf
+(# -*- coding:latin-1 -*-)Tj
+()'
+()'
+(# TODO:)Tj
+()'
+(# - allow selection of encoding)Tj
+()'
+(# - allow selection of lexer)Tj
+()'
+(# - list encodings)Tj
+()'
+(# - list lexers)Tj
+()'
+()'
+()'
+/F1 8 Tf
+(import time)Tj
+()'
+(import os)Tj
+()'
+(import getpass)Tj
+()'
+()'
+(username = getpass.getuser\(\))Tj
+()'
+(pagesize = \(595.28, 841.89\) )Tj
+/F4 8 Tf
+(# A4)Tj
+()'
+()'
+()'
+/F2 8 Tf
+(class)Tj
+/F1 8 Tf
+( Font:)Tj
+()'
+(    )Tj
+/F2 8 Tf
+(def)Tj
+/F1 8 Tf
+( __init__\()Tj
+/F2 8 Tf
+(self)Tj
+/F1 8 Tf
+(, subtype, basefont, widths\):)Tj
+()'
+(        )Tj
+/F2 8 Tf
+(self)Tj
+/F1 8 Tf
+(.subtype = subtype)Tj
+()'
+(        )Tj
+/F2 8 Tf
+(self)Tj
+/F1 8 Tf
+(.basefont = basefont)Tj
+()'
+(        )Tj
+/F2 8 Tf
+(self)Tj
+/F1 8 Tf
+(.widths = widths)Tj
+()'
+(        )Tj
+()'
+(    )Tj
+/F2 8 Tf
+(def)Tj
+/F1 8 Tf
+( __repr__\()Tj
+/F2 8 Tf
+(self)Tj
+/F1 8 Tf
+(\):)Tj
+()'
+(        )Tj
+/F2 8 Tf
+(return)Tj
+/F1 8 Tf
+( )Tj
+/F4 8 Tf
+('<%s>')Tj
+/F1 8 Tf
+( % )Tj
+/F2 8 Tf
+(self)Tj
+/F1 8 Tf
+(.basefont)Tj
+()'
+()'
+(    )Tj
+/F2 8 Tf
+(def)Tj
+/F1 8 Tf
+( measure\()Tj
+/F2 8 Tf
+(self)Tj
+/F1 8 Tf
+(, s, size\):)Tj
+()'
+(        charwidths = )Tj
+/F2 8 Tf
+(self)Tj
+/F1 8 Tf
+(.widths)Tj
+()'
+(        w = 0)Tj
+()'
+(        )Tj
+/F2 8 Tf
+(for)Tj
+/F1 8 Tf
+( c in s:)Tj
+()'
+(            )Tj
+/F2 8 Tf
+(try)Tj
+/F1 8 Tf
+(:)Tj
+()'
+(                w += charwidths[c])Tj
+()'
+(            )Tj
+/F2 8 Tf
+(except)Tj
+/F1 8 Tf
+(:)Tj
+()'
+(                w += charwidths[)Tj
+/F4 8 Tf
+('m')Tj
+/F1 8 Tf
+(] )Tj
+/F4 8 Tf
+(# XXX HACK                )Tj
+()'
+/F1 8 Tf
+(        )Tj
+/F2 8 Tf
+(return)Tj
+/F1 8 Tf
+( w*size/1000.0)Tj
+()'
+()'
+(    )Tj
+/F2 8 Tf
+(def)Tj
+/F1 8 Tf
+( split\()Tj
+/F2 8 Tf
+(self)Tj
+/F1 8 Tf
+(, s, fontsize, width0, width1\):)Tj
+()'
+(        )Tj
+/F4 8 Tf
+(# Splits s such that the size of the resulting pieces is less)Tj
+()'
+/F1 8 Tf
+(        )Tj
+/F4 8 Tf
+(# than *width*.)Tj
+()'
+/F1 8 Tf
+(        )Tj
+/F4 8 Tf
+(#)Tj
+()'
+/F1 8 Tf
+(        )Tj
+/F4 8 Tf
+(# NOTE: if width is smaller than the first character things)Tj
+()'
+/F1 8 Tf
+(        )Tj
+/F4 8 Tf
+(# are complicated: if we are at the first line, we split)Tj
+()'
+/F1 8 Tf
+(        )Tj
+/F4 8 Tf
+(# before the character, otherwise behind it.)Tj
+()'
+/F1 8 Tf
+(        maxw = width0)Tj
+()'
+(        charwidths = )Tj
+/F2 8 Tf
+(self)Tj
+/F1 8 Tf
+(.widths)Tj
+()'
+(        r = [\(0, )Tj
+/F4 8 Tf
+('')Tj
+/F1 8 Tf
+(\)])Tj
+()'
+(        w = 0)Tj
+()'
+(        )Tj
+/F2 8 Tf
+(for)Tj
+/F1 8 Tf
+( c in s:)Tj
+()'
+(            )Tj
+/F2 8 Tf
+(try)Tj
+/F1 8 Tf
+(:)Tj
+()'
+(                _w = charwidths[c])Tj
+()'
+(            )Tj
+/F2 8 Tf
+(except)Tj
+/F1 8 Tf
+(:)Tj
+()'
+(                _w = charwidths[)Tj
+/F4 8 Tf
+('m')Tj
+/F1 8 Tf
+(] )Tj
+/F4 8 Tf
+(# XXX HACK)Tj
+()'
+/F1 8 Tf
+(            _w *= fontsize/1000.0)Tj
+()'
+(            )Tj
+/F2 8 Tf
+(if)Tj
+/F1 8 Tf
+( w+_w > maxw:)Tj
+()'
+(                r.append\(\(0, )Tj
+/F4 8 Tf
+('')Tj
+/F1 8 Tf
+(\)\))Tj
+()'
+(                w = 0)Tj
+()'
+(                maxw = width1)Tj
+()'
+(            a = r[-1])Tj
+()'
+(            r[-1] = a[0]+_w, a[1]+c)Tj
+()'
+(            w += _w)Tj
+()'
+ET
+q
+423 38 394 499 re
+S
+0.95 0.95 0.95 rg
+423 537 394 17 re
+f
+Q
+423 537 394 17 re
+S
+BT /F5 9 Tf 432 541 Td (Mar 25, 20 22:18)Tj ET
+BT /F6 12 Tf 591 541 Td (src2pdf.py)Tj ET
+BT /F5 9 Tf 773 541 Td (Page 2/9)Tj ET
+BT
+425.945 527.28 Td
+8 TL
+/F1 8 Tf
+(        )Tj
+/F2 8 Tf
+(return)Tj
+/F1 8 Tf
+( r)Tj
+()'
+()'
+(_widths = {unichr\(i\) : 600 )Tj
+/F2 8 Tf
+(for)Tj
+/F1 8 Tf
+( i in range\(256\)})Tj
+()'
+(COURIER = Font\()Tj
+/F4 8 Tf
+("Type1")Tj
+/F1 8 Tf
+(, )Tj
+/F4 8 Tf
+("Courier")Tj
+/F1 8 Tf
+(, _widths\))Tj
+()'
+(COURIER_BOLD = Font\()Tj
+/F4 8 Tf
+("Type1")Tj
+/F1 8 Tf
+(, )Tj
+/F4 8 Tf
+("Courier-Bold")Tj
+/F1 8 Tf
+(, _widths\))Tj
+()'
+(COURIER_OBLIQUE = Font\()Tj
+/F4 8 Tf
+("Type1")Tj
+/F1 8 Tf
+(, )Tj
+/F4 8 Tf
+("Courier-Oblique")Tj
+/F1 8 Tf
+(, _widths\))Tj
+()'
+()'
+(l = 278,278,278,278,278,278,278,278,278,278,278,278,278,278,278,278,278,278,\\)Tj
+()'
+(    278,278,278,278,278,278,278,278,278,278,278,278,278,278,278,278,355,556,\\)Tj
+()'
+(    556,889,667,191,333,333,389,584,278,333,278,278,556,556,556,556,556,556,\\)Tj
+()'
+(    556,556,556,556,278,278,584,584,584,556,1015,667,667,722,722,667,611,778,\\)Tj
+()'
+(    722,278,500,667,556,833,722,778,667,778,722,667,611,722,667,944,667,667,\\)Tj
+()'
+(    611,278,278,278,469,556,333,556,556,500,556,556,278,556,556,222,222,500,\\)Tj
+()'
+(    222,833,556,556,556,556,333,500,278,556,500,722,500,500,500,334,260,334,\\)Tj
+()'
+(    584,350,556,350,222,556,333,1000,556,556,333,1000,667,333,1000,350,611,\\)Tj
+()'
+(    350,350,222,222,333,333,350,556,1000,333,1000,500,333,944,350,500,667,278,\\)Tj
+()'
+(    333,556,556,556,556,260,556,333,737,370,556,584,333,737,333,400,584,333,\\)Tj
+()'
+(    333,333,556,537,278,333,333,365,556,834,834,834,611,667,667,667,667,667,\\)Tj
+()'
+(    667,1000,722,667,667,667,667,278,278,278,278,722,722,778,778,778,778,778,\\)Tj
+()'
+(    584,778,722,722,722,722,667,667,611,556,556,556,556,556,556,889,500,556,\\)Tj
+()'
+(    556,556,556,278,278,278,278,556,556,556,556,556,556,556,584,611,556,556,\\)Tj
+()'
+(    556,556,500,556,500)Tj
+()'
+(_widths = {unichr\(i\) : l[i] )Tj
+/F2 8 Tf
+(for)Tj
+/F1 8 Tf
+( i in range\(256\)})Tj
+()'
+(HELVETICA = Font\()Tj
+/F4 8 Tf
+("Type1")Tj
+/F1 8 Tf
+(, )Tj
+/F4 8 Tf
+("Helvetica")Tj
+/F1 8 Tf
+(, _widths\))Tj
+()'
+()'
+(l = 278,278,278,278,278,278,278,278,278,278,278,278,278,278,278,278,278,278,\\)Tj
+()'
+(    278,278,278,278,278,278,278,278,278,278,278,278,278,278,278,333,474,556,\\)Tj
+()'
+(    556,889,722,238,333,333,389,584,278,333,278,278,556,556,556,556,556,556,\\)Tj
+()'
+(    556,556,556,556,333,333,584,584,584,611,975,722,722,722,722,667,611,778,\\)Tj
+()'
+(    722,278,556,722,611,833,722,778,667,778,722,667,611,722,667,944,667,667,\\)Tj
+()'
+(    611,333,278,333,584,556,333,556,611,556,611,556,333,611,611,278,278,556,\\)Tj
+()'
+(    278,889,611,611,611,611,389,556,333,611,556,778,556,556,500,389,280,389,\\)Tj
+()'
+(    584,350,556,350,278,556,500,1000,556,556,333,1000,667,333,1000,350,611,\\)Tj
+()'
+(    350,350,278,278,500,500,350,556,1000,333,1000,556,333,944,350,500,667,\\)Tj
+()'
+(    278,333,556,556,556,556,280,556,333,737,370,556,584,333,737,333,400,584,\\)Tj
+()'
+(    333,333,333,611,556,278,333,333,365,556,834,834,834,611,722,722,722,722,\\)Tj
+()'
+(    722,722,1000,722,667,667,667,667,278,278,278,278,722,722,778,778,778,778,\\)Tj
+()'
+(    778,584,778,722,722,722,722,667,667,611,556,556,556,556,556,556,889,556,\\)Tj
+()'
+(    556,556,556,556,278,278,278,278,611,611,611,611,611,611,611,584,611,611,\\)Tj
+()'
+(    611,611,611,556,611,556)Tj
+()'
+()'
+(_widths = {unichr\(i\) : l[i] )Tj
+/F2 8 Tf
+(for)Tj
+/F1 8 Tf
+( i in range\(256\)})Tj
+()'
+(HELVETICA_BOLD = Font\()Tj
+/F4 8 Tf
+("Type1")Tj
+/F1 8 Tf
+(, )Tj
+/F4 8 Tf
+("Helvetica-Bold")Tj
+/F1 8 Tf
+(, _widths\))Tj
+()'
+()'
+(l = 250,250,250,250,250,250,250,250,250,250,250,250,250,250,250,250,250,250,\\)Tj
+()'
+(    250,250,250,250,250,250,250,250,250,250,250,250,250,250,250,333,408,500,\\)Tj
+()'
+(    500,833,778,180,333,333,500,564,250,333,250,278,500,500,500,500,500,500,\\)Tj
+()'
+(    500,500,500,500,278,278,564,564,564,444,921,722,667,667,722,611,556,722,\\)Tj
+()'
+(    722,333,389,722,611,889,722,722,556,722,667,556,611,722,722,944,722,722,\\)Tj
+()'
+(    611,333,278,333,469,500,333,444,500,444,500,444,333,500,500,278,278,500,\\)Tj
+()'
+(    278,778,500,500,500,500,333,389,278,500,500,722,500,500,444,480,200,480,\\)Tj
+()'
+(    541,350,500,350,333,500,444,1000,500,500,333,1000,556,333,889,350,611,350,\\)Tj
+()'
+(    350,333,333,444,444,350,500,1000,333,980,389,333,722,350,444,722,250,333,\\)Tj
+()'
+(    500,500,500,500,200,500,333,760,276,500,564,333,760,333,400,564,300,300,\\)Tj
+()'
+(    333,500,453,250,333,300,310,500,750,750,750,444,722,722,722,722,722,722,\\)Tj
+()'
+(    889,667,611,611,611,611,333,333,333,333,722,722,722,722,722,722,722,564,\\)Tj
+()'
+(    722,722,722,722,722,722,556,500,444,444,444,444,444,444,667,444,444,444,\\)Tj
+()'
+(    444,444,278,278,278,278,500,500,500,500,500,500,500,564,500,500,500,500,\\)Tj
+()'
+(    500,500,500,500)Tj
+()'
+(_widths = {unichr\(i\) : l[i] )Tj
+/F2 8 Tf
+(for)Tj
+/F1 8 Tf
+( i in range\(256\)})Tj
+()'
+(TIMES = Font\()Tj
+/F4 8 Tf
+("Type1")Tj
+/F1 8 Tf
+(, )Tj
+/F4 8 Tf
+("Times")Tj
+/F1 8 Tf
+(, _widths\))Tj
+()'
+ET
+Q
+
+endstream
+endobj
+4 0 obj
+8520
+endobj
+5 0 obj
+<< /Parent 2 0 R /Resources << /Font <<         /F1 << /Encoding /WinAnsiEncoding /Type /Font 
+               /BaseFont /Courier 
+               /Subtype /Type1 >>        /F2 << /Encoding /WinAnsiEncoding /Type /Font 
+               /BaseFont /Courier-Bold 
+               /Subtype /Type1 >>        /F3 << /Encoding /WinAnsiEncoding /Type /Font 
+               /BaseFont /Times 
+               /Subtype /Type1 >>        /F4 << /Encoding /WinAnsiEncoding /Type /Font 
+               /BaseFont /Courier-Oblique 
+               /Subtype /Type1 >>        /F5 << /Encoding /WinAnsiEncoding /Type /Font 
+               /BaseFont /Helvetica 
+               /Subtype /Type1 >>        /F6 << /Encoding /WinAnsiEncoding /Type /Font 
+               /BaseFont /Helvetica-Bold 
+               /Subtype /Type1 >>        >>
+      >>
+      /MediaBox [ 0 0 595.28 841.89 ]
+      /Rotate 90
+
+      /Type /Page /ProcSet [/PDF /Text /ImageB /ImageC /ImageI] 
+      /Contents 3 0 R 
+    >>
+endobj
+6 0 obj
+<< /Length 7  0 R>>
+stream
+q
+0 1 -1 0 595.28 0 cm
+BT /F5 9 Tf 25 29 Td (Printed by ecker)Tj ET
+BT /F5 9 Tf 748 29 Td (Mar 25, 20 22:37)Tj ET
+q
+23 38 394 499 re
+S
+0.95 0.95 0.95 rg
+23 537 394 17 re
+f
+Q
+23 537 394 17 re
+S
+BT /F5 9 Tf 32 541 Td (Mar 25, 20 22:18)Tj ET
+BT /F6 12 Tf 190 541 Td (src2pdf.py)Tj ET
+BT /F5 9 Tf 372 541 Td (Page 3/9)Tj ET
+BT
+25 527.28 Td
+8 TL
+()'
+()'
+/F2 8 Tf
+(def)Tj
+/F1 8 Tf
+( build_lines\(pieces, max_width\):)Tj
+()'
+(    )Tj
+/F4 8 Tf
+(# A piece is a tuple \(string, font\))Tj
+()'
+/F1 8 Tf
+(    line = [])Tj
+()'
+(    width = 0)Tj
+()'
+(    )Tj
+/F2 8 Tf
+(for)Tj
+/F1 8 Tf
+( text, \(font, fontsize\) in pieces:)Tj
+()'
+(        add_nl = )Tj
+/F2 8 Tf
+(False)Tj
+()'
+/F1 8 Tf
+(        )Tj
+/F2 8 Tf
+(for)Tj
+/F1 8 Tf
+( s in text.split\()Tj
+/F4 8 Tf
+('\\n')Tj
+/F1 8 Tf
+(\):)Tj
+()'
+(            )Tj
+/F2 8 Tf
+(if)Tj
+/F1 8 Tf
+( add_nl:)Tj
+()'
+(                )Tj
+/F2 8 Tf
+(yield)Tj
+/F1 8 Tf
+( line)Tj
+()'
+(                width = 0)Tj
+()'
+(                line = [])Tj
+()'
+(            )Tj
+/F2 8 Tf
+(else)Tj
+/F1 8 Tf
+(:)Tj
+()'
+(                add_nl = )Tj
+/F2 8 Tf
+(True)Tj
+()'
+/F1 8 Tf
+(                )Tj
+()'
+(            first = )Tj
+/F2 8 Tf
+(True)Tj
+()'
+/F1 8 Tf
+(            )Tj
+/F2 8 Tf
+(for)Tj
+/F1 8 Tf
+( w, ss in font.split\(s, fontsize, max_width-width, max_width\):)Tj
+()'
+(                )Tj
+/F2 8 Tf
+(if)Tj
+/F1 8 Tf
+( first:)Tj
+()'
+(                    first = )Tj
+/F2 8 Tf
+(False)Tj
+()'
+/F1 8 Tf
+(                )Tj
+/F2 8 Tf
+(else)Tj
+/F1 8 Tf
+(:)Tj
+()'
+(                    )Tj
+/F2 8 Tf
+(assert)Tj
+/F1 8 Tf
+( width <= max_width)Tj
+()'
+(                    )Tj
+/F2 8 Tf
+(yield)Tj
+/F1 8 Tf
+( line)Tj
+()'
+(                    width = 0)Tj
+()'
+(                    line = [])Tj
+()'
+(                )Tj
+/F2 8 Tf
+(if)Tj
+/F1 8 Tf
+( ss:)Tj
+()'
+(                    line.append\(\(ss, \(font, fontsize\)\)\))Tj
+()'
+(                    width += w)Tj
+()'
+()'
+()'
+/F2 8 Tf
+(def)Tj
+/F1 8 Tf
+( ngroup\(l, n\):)Tj
+()'
+(    )Tj
+/F4 8 Tf
+(# Split l into tuples of size n)Tj
+()'
+/F1 8 Tf
+(    r = [])Tj
+()'
+(    )Tj
+/F2 8 Tf
+(for)Tj
+/F1 8 Tf
+( x in l:)Tj
+()'
+(        r.append\(x\))Tj
+()'
+(        )Tj
+/F2 8 Tf
+(if)Tj
+/F1 8 Tf
+( len\(r\) >= n:)Tj
+()'
+(            )Tj
+/F2 8 Tf
+(yield)Tj
+/F1 8 Tf
+( r)Tj
+()'
+(            r = [])Tj
+()'
+(    )Tj
+/F2 8 Tf
+(if)Tj
+/F1 8 Tf
+( r:)Tj
+()'
+(        )Tj
+/F2 8 Tf
+(yield)Tj
+/F1 8 Tf
+( r)Tj
+()'
+()'
+()'
+/F2 8 Tf
+(def)Tj
+/F1 8 Tf
+( compute_pieces\(filename, fontsize\):)Tj
+()'
+(    from pygments.formatter import Formatter)Tj
+()'
+(    from pygments.lexers import guess_lexer_for_filename, get_lexer_by_name)Tj
+()'
+(    from pygments import token )Tj
+/F2 8 Tf
+(as)Tj
+/F1 8 Tf
+( Token)Tj
+()'
+(    from pygments import highlight)Tj
+()'
+()'
+(    style = {)Tj
+()'
+(        Token.Keyword : \(COURIER_BOLD, fontsize\),)Tj
+()'
+(        Token.Name.Builtin.Pseudo : \(COURIER_BOLD, fontsize\),)Tj
+()'
+(        Token.Comment.Single : \(COURIER_OBLIQUE, fontsize\),)Tj
+()'
+(        Token.Comment : \(COURIER_OBLIQUE, fontsize\),)Tj
+()'
+(        Token.Literal.String : \(COURIER_OBLIQUE, fontsize\),)Tj
+()'
+(        Token.Literal.String.Single : \(COURIER_OBLIQUE, fontsize\),)Tj
+()'
+(        Token.Literal.String.Double : \(COURIER_OBLIQUE, fontsize\),)Tj
+()'
+(        Token.Literal.String.Escape : \(COURIER_OBLIQUE, fontsize\),)Tj
+()'
+(        Token.Literal.String.Interpol : \(COURIER_OBLIQUE, fontsize\),)Tj
+()'
+(        )Tj
+/F2 8 Tf
+(None)Tj
+/F1 8 Tf
+( : \(COURIER, fontsize\), )Tj
+/F4 8 Tf
+(# default)Tj
+()'
+/F1 8 Tf
+(    })Tj
+()'
+(    )Tj
+()'
+ET
+q
+423 38 394 499 re
+S
+0.95 0.95 0.95 rg
+423 537 394 17 re
+f
+Q
+423 537 394 17 re
+S
+BT /F5 9 Tf 432 541 Td (Mar 25, 20 22:18)Tj ET
+BT /F6 12 Tf 591 541 Td (src2pdf.py)Tj ET
+BT /F5 9 Tf 773 541 Td (Page 4/9)Tj ET
+BT
+425.945 527.28 Td
+8 TL
+/F1 8 Tf
+(    )Tj
+/F2 8 Tf
+(class)Tj
+/F1 8 Tf
+( FontFormatter\(Formatter\):)Tj
+()'
+(        )Tj
+/F2 8 Tf
+(def)Tj
+/F1 8 Tf
+( format\()Tj
+/F2 8 Tf
+(self)Tj
+/F1 8 Tf
+(, tokensource, outfile, style=style\):)Tj
+()'
+(            last = )Tj
+/F2 8 Tf
+(None)Tj
+()'
+/F1 8 Tf
+(            l = [])Tj
+()'
+(            )Tj
+/F2 8 Tf
+(for)Tj
+/F1 8 Tf
+( token, text in tokensource:)Tj
+()'
+(                )Tj
+/F2 8 Tf
+(try)Tj
+/F1 8 Tf
+(:)Tj
+()'
+(                    fontinfo = style[token])Tj
+()'
+(                )Tj
+/F2 8 Tf
+(except)Tj
+/F1 8 Tf
+( KeyError:)Tj
+()'
+(                    fontinfo = style[)Tj
+/F2 8 Tf
+(None)Tj
+/F1 8 Tf
+(])Tj
+()'
+(                )Tj
+/F2 8 Tf
+(if)Tj
+/F1 8 Tf
+( fontinfo == last:)Tj
+()'
+(                    l[-1][0] += text)Tj
+()'
+(                )Tj
+/F2 8 Tf
+(else)Tj
+/F1 8 Tf
+(:)Tj
+()'
+(                    l.append\([text, fontinfo]\))Tj
+()'
+(                    last = fontinfo)Tj
+()'
+(            )Tj
+/F2 8 Tf
+(self)Tj
+/F1 8 Tf
+(.pieces = l)Tj
+()'
+()'
+(    formatter = FontFormatter\(\))Tj
+()'
+(    src = open\(filename, )Tj
+/F4 8 Tf
+('r')Tj
+/F1 8 Tf
+(\).read\(\))Tj
+()'
+(    lexer = guess_lexer_for_filename\(filename, src\))Tj
+()'
+(    highlight\(src, lexer, formatter\))Tj
+()'
+(    )Tj
+/F2 8 Tf
+(return)Tj
+/F1 8 Tf
+( formatter.pieces)Tj
+()'
+()'
+()'
+/F2 8 Tf
+(def)Tj
+/F1 8 Tf
+( make_ref\(refs\):)Tj
+()'
+(    r = len\(refs\)+1, 0)Tj
+()'
+(    refs.add\(r\))Tj
+()'
+(    )Tj
+/F2 8 Tf
+(return)Tj
+/F1 8 Tf
+( r)Tj
+()'
+()'
+()'
+/F2 8 Tf
+(def)Tj
+/F1 8 Tf
+( quote\(s\):    )Tj
+()'
+(    )Tj
+/F2 8 Tf
+(return)Tj
+/F1 8 Tf
+( s.replace\()Tj
+/F4 8 Tf
+('\\\\')Tj
+/F1 8 Tf
+(,)Tj
+/F4 8 Tf
+('\\\\\\\\')Tj
+/F1 8 Tf
+(\).replace\()Tj
+/F4 8 Tf
+('\)')Tj
+/F1 8 Tf
+(,)Tj
+/F4 8 Tf
+('\\\\\)')Tj
+/F1 8 Tf
+(\).replace\()Tj
+/F4 8 Tf
+('\(')Tj
+/F1 8 Tf
+(,)Tj
+/F4 8 Tf
+('\\\\\(')Tj
+/F1 8 Tf
+(\).\\)Tj
+()'
+(        replace\()Tj
+/F4 8 Tf
+('\\r')Tj
+/F1 8 Tf
+(,)Tj
+/F4 8 Tf
+('\\\\r')Tj
+/F1 8 Tf
+(\))Tj
+()'
+()'
+()'
+/F2 8 Tf
+(def)Tj
+/F1 8 Tf
+( make_s\(obj\):)Tj
+()'
+(    )Tj
+/F4 8 Tf
+(# Create string representation for obj)Tj
+()'
+/F1 8 Tf
+(    )Tj
+/F2 8 Tf
+(if)Tj
+/F1 8 Tf
+( type\(obj\) == str:)Tj
+()'
+(        )Tj
+/F2 8 Tf
+(return)Tj
+/F1 8 Tf
+( obj)Tj
+()'
+(    )Tj
+/F2 8 Tf
+(if)Tj
+/F1 8 Tf
+( type\(obj\) == unicode:)Tj
+()'
+(        )Tj
+/F2 8 Tf
+(return)Tj
+/F1 8 Tf
+( obj.encode\()Tj
+/F4 8 Tf
+('latin-1')Tj
+/F1 8 Tf
+(\) )Tj
+/F4 8 Tf
+(# XXX add ignore-flag?)Tj
+()'
+/F1 8 Tf
+(    )Tj
+/F2 8 Tf
+(if)Tj
+/F1 8 Tf
+( type\(obj\) == tuple:)Tj
+()'
+(        )Tj
+/F4 8 Tf
+(# we always interpret tuples as references!)Tj
+()'
+/F1 8 Tf
+(        )Tj
+/F2 8 Tf
+(return)Tj
+/F1 8 Tf
+( )Tj
+/F4 8 Tf
+('%i %i R')Tj
+/F1 8 Tf
+( % obj)Tj
+()'
+(    )Tj
+/F2 8 Tf
+(if)Tj
+/F1 8 Tf
+( type\(obj\) == list:)Tj
+()'
+(        )Tj
+/F4 8 Tf
+(# we always interpret lists as lists!)Tj
+()'
+/F1 8 Tf
+(        l = [make_s\(child\) )Tj
+/F2 8 Tf
+(for)Tj
+/F1 8 Tf
+( child in obj])Tj
+()'
+(        )Tj
+/F2 8 Tf
+(return)Tj
+/F1 8 Tf
+( )Tj
+/F4 8 Tf
+('[')Tj
+/F1 8 Tf
+(+\()Tj
+/F4 8 Tf
+(' ')Tj
+/F1 8 Tf
+(.join\(l\)\)+)Tj
+/F4 8 Tf
+(']')Tj
+()'
+/F1 8 Tf
+(    )Tj
+/F2 8 Tf
+(if)Tj
+/F1 8 Tf
+( type\(obj\) == dict:)Tj
+()'
+(        )Tj
+/F4 8 Tf
+(# we always interpret dicts as dicts!)Tj
+()'
+/F1 8 Tf
+(        l = [)Tj
+/F4 8 Tf
+('/')Tj
+/F1 8 Tf
+(+make_s\(k\)+)Tj
+/F4 8 Tf
+(' ')Tj
+/F1 8 Tf
+(+make_s\(v\) )Tj
+/F2 8 Tf
+(for)Tj
+/F1 8 Tf
+( \(k, v\) in obj.items\(\)])Tj
+()'
+(        )Tj
+/F2 8 Tf
+(return)Tj
+/F1 8 Tf
+( )Tj
+/F4 8 Tf
+('<<\\n')Tj
+/F1 8 Tf
+(+\()Tj
+/F4 8 Tf
+(' ')Tj
+/F1 8 Tf
+(.join\(l\)\)+)Tj
+/F4 8 Tf
+(' >>\\n')Tj
+()'
+/F1 8 Tf
+(    )Tj
+/F2 8 Tf
+(if)Tj
+/F1 8 Tf
+( type\(obj\) in \(int, float\):)Tj
+()'
+(        )Tj
+/F2 8 Tf
+(return)Tj
+/F1 8 Tf
+( str\(obj\))Tj
+()'
+(    )Tj
+/F2 8 Tf
+(raise)Tj
+/F1 8 Tf
+( Exception\()Tj
+/F4 8 Tf
+("Wrong type: %s")Tj
+/F1 8 Tf
+( % repr\(obj\)\))Tj
+()'
+()'
+()'
+/F2 8 Tf
+(def)Tj
+/F1 8 Tf
+( shrink\(rect, d\):)Tj
+()'
+(    )Tj
+/F4 8 Tf
+(# Shrink rectangle rect by amount d)Tj
+()'
+/F1 8 Tf
+(    x, y, w, h = rect)Tj
+()'
+(    )Tj
+/F2 8 Tf
+(return)Tj
+/F1 8 Tf
+( \(x+d, y+d, w-2*d, h-2*d\))Tj
+()'
+()'
+ET
+Q
+
+endstream
+endobj
+7 0 obj
+7655
+endobj
+8 0 obj
+<< /Parent 2 0 R /Resources << /Font <<         /F1 << /Encoding /WinAnsiEncoding /Type /Font 
+               /BaseFont /Courier 
+               /Subtype /Type1 >>        /F2 << /Encoding /WinAnsiEncoding /Type /Font 
+               /BaseFont /Courier-Bold 
+               /Subtype /Type1 >>        /F3 << /Encoding /WinAnsiEncoding /Type /Font 
+               /BaseFont /Times 
+               /Subtype /Type1 >>        /F4 << /Encoding /WinAnsiEncoding /Type /Font 
+               /BaseFont /Courier-Oblique 
+               /Subtype /Type1 >>        /F5 << /Encoding /WinAnsiEncoding /Type /Font 
+               /BaseFont /Helvetica 
+               /Subtype /Type1 >>        /F6 << /Encoding /WinAnsiEncoding /Type /Font 
+               /BaseFont /Helvetica-Bold 
+               /Subtype /Type1 >>        >>
+      >>
+      /MediaBox [ 0 0 595.28 841.89 ]
+      /Rotate 90
+
+      /Type /Page /ProcSet [/PDF /Text /ImageB /ImageC /ImageI] 
+      /Contents 6 0 R 
+    >>
+endobj
+9 0 obj
+<< /Length 10  0 R>>
+stream
+q
+0 1 -1 0 595.28 0 cm
+BT /F5 9 Tf 25 29 Td (Printed by ecker)Tj ET
+BT /F5 9 Tf 748 29 Td (Mar 25, 20 22:37)Tj ET
+q
+23 38 394 499 re
+S
+0.95 0.95 0.95 rg
+23 537 394 17 re
+f
+Q
+23 537 394 17 re
+S
+BT /F5 9 Tf 32 541 Td (Mar 25, 20 22:18)Tj ET
+BT /F6 12 Tf 190 541 Td (src2pdf.py)Tj ET
+BT /F5 9 Tf 372 541 Td (Page 5/9)Tj ET
+BT
+25 527.28 Td
+8 TL
+()'
+/F2 8 Tf
+(def)Tj
+/F1 8 Tf
+( grow\(rect, d\):)Tj
+()'
+(    )Tj
+/F4 8 Tf
+(# Grow rectangle rect by amount d)Tj
+()'
+/F1 8 Tf
+(    )Tj
+/F2 8 Tf
+(return)Tj
+/F1 8 Tf
+( shrink\(rect, -d\))Tj
+()'
+()'
+()'
+/F2 8 Tf
+(def)Tj
+/F1 8 Tf
+( create_pdf\(infilename, outfilename, twoup, fontsize\):)Tj
+()'
+(    pieces = compute_pieces\(infilename, fontsize\))Tj
+()'
+(    f = open\(outfilename, )Tj
+/F4 8 Tf
+('wb')Tj
+/F1 8 Tf
+(\))Tj
+()'
+(    t = time.localtime\(os.path.getmtime\(infilename\)\))Tj
+()'
+(    file_date = time.strftime\()Tj
+/F4 8 Tf
+("%b %d, %y %H:%M")Tj
+/F1 8 Tf
+(, t\))Tj
+()'
+(    date = time.strftime\()Tj
+/F4 8 Tf
+("%b %d, %y %H:%M")Tj
+/F1 8 Tf
+(\))Tj
+()'
+()'
+(    )Tj
+/F2 8 Tf
+(def)Tj
+/F1 8 Tf
+( out\(obj, f=f\):)Tj
+()'
+(        s = make_s\(obj\))Tj
+()'
+(        f.write\(s\))Tj
+()'
+()'
+(    )Tj
+/F2 8 Tf
+(def)Tj
+/F1 8 Tf
+( centered\(x, y, text, font, size\):)Tj
+()'
+(        w = font.measure\(text, size\))Tj
+()'
+(        out\()Tj
+/F4 8 Tf
+("BT /%s %i Tf %i %i Td \(%s\)Tj ET\\n")Tj
+/F1 8 Tf
+( %)Tj
+()'
+(            \(fontnames[font], size, x-0.5*w, y, text\)\))Tj
+()'
+()'
+(    )Tj
+/F2 8 Tf
+(def)Tj
+/F1 8 Tf
+( right_aligned\(x, y, text, font, size\):)Tj
+()'
+(        w = font.measure\(text, size\))Tj
+()'
+(        out\()Tj
+/F4 8 Tf
+("BT /%s %i Tf %i %i Td \(%s\)Tj ET\\n")Tj
+/F1 8 Tf
+( %)Tj
+()'
+(            \(fontnames[font], size, x-w, y, text\)\))Tj
+()'
+(        )Tj
+()'
+()'
+(    fontnames = {)Tj
+()'
+(        COURIER : )Tj
+/F4 8 Tf
+('F1')Tj
+/F1 8 Tf
+(,)Tj
+()'
+(        COURIER_BOLD : )Tj
+/F4 8 Tf
+('F2')Tj
+/F1 8 Tf
+(,)Tj
+()'
+(        TIMES : )Tj
+/F4 8 Tf
+('F3')Tj
+/F1 8 Tf
+(,)Tj
+()'
+(        COURIER_OBLIQUE : )Tj
+/F4 8 Tf
+('F4')Tj
+/F1 8 Tf
+(,        )Tj
+()'
+(        HELVETICA : )Tj
+/F4 8 Tf
+('F5')Tj
+/F1 8 Tf
+(,        )Tj
+()'
+(        HELVETICA_BOLD : )Tj
+/F4 8 Tf
+('F6')Tj
+/F1 8 Tf
+(,        )Tj
+()'
+(    })Tj
+()'
+(    xref = {} )Tj
+/F4 8 Tf
+(#  of tuples \(number, id, position\))Tj
+()'
+/F1 8 Tf
+(    pages = [] )Tj
+/F4 8 Tf
+(# list of content ids)Tj
+()'
+/F1 8 Tf
+(    refs = set\(\) )Tj
+/F4 8 Tf
+(# used references)Tj
+()'
+()'
+/F1 8 Tf
+(    )Tj
+/F4 8 Tf
+(# geometry)Tj
+()'
+/F1 8 Tf
+(    )Tj
+/F2 8 Tf
+(if)Tj
+/F1 8 Tf
+( twoup:)Tj
+()'
+(        ph, pw = pagesize)Tj
+()'
+(        bl = 25)Tj
+()'
+(        br = 5)Tj
+()'
+(        bt = 60)Tj
+()'
+(        bb = 40)Tj
+()'
+(        pwh = 0.5*pw)Tj
+()'
+(        w = pwh-bl-br)Tj
+()'
+(        left_frame = bl, bb, w, ph-bt-bb        )Tj
+()'
+(        right_frame = pwh+br, bb, w, ph-bt-bb)Tj
+()'
+(        outer_frame = bl, bb, pwh+br+w-bl, ph-bt-bb)Tj
+()'
+(        lines = build_lines\(pieces, left_frame[2]\))Tj
+()'
+(        lines_per_frame = int\(left_frame[3] / fontsize\))Tj
+()'
+(    )Tj
+/F2 8 Tf
+(else)Tj
+/F1 8 Tf
+(:)Tj
+()'
+(        pw, ph = pagesize)Tj
+()'
+(        bl = 40)Tj
+()'
+(        br = 40)Tj
+()'
+(        bt = 80)Tj
+()'
+(        bb = 40            )Tj
+()'
+(        frame = bb, bl, pw-bl-br, ph-bt-bb)Tj
+()'
+ET
+q
+423 38 394 499 re
+S
+0.95 0.95 0.95 rg
+423 537 394 17 re
+f
+Q
+423 537 394 17 re
+S
+BT /F5 9 Tf 432 541 Td (Mar 25, 20 22:18)Tj ET
+BT /F6 12 Tf 591 541 Td (src2pdf.py)Tj ET
+BT /F5 9 Tf 773 541 Td (Page 6/9)Tj ET
+BT
+425.945 527.28 Td
+8 TL
+/F1 8 Tf
+(        outer_frame = frame)Tj
+()'
+(        lines_per_frame = int\(frame[3] / fontsize\))Tj
+()'
+(        lines = build_lines\(pieces, frame[2]\))Tj
+()'
+()'
+(    )Tj
+/F4 8 Tf
+(# header)Tj
+()'
+/F1 8 Tf
+(    out\()Tj
+/F4 8 Tf
+("%PDF-1.3\\n%\\xC7\\xEC\\x8F\\xA2\\n")Tj
+/F1 8 Tf
+(\))Tj
+()'
+()'
+(    )Tj
+/F4 8 Tf
+(# object 1: catalog    )Tj
+()'
+/F1 8 Tf
+(    refs.add\(\(1, 0\)\))Tj
+()'
+(    xref[\(1, 0\)] = f.tell\(\))Tj
+()'
+(    out\()Tj
+/F4 8 Tf
+("1 0 obj\\n  << /Type /Catalog\\n /Pages 2 0 R >> \\nendobj\\n\\n")Tj
+/F1 8 Tf
+(\))Tj
+()'
+()'
+(    )Tj
+/F4 8 Tf
+(# object 2: root pages - we write it later!)Tj
+()'
+/F1 8 Tf
+(    refs.add\(\(2, 0\)\))Tj
+()'
+()'
+(    )Tj
+/F4 8 Tf
+(# writing the pages    )Tj
+()'
+/F1 8 Tf
+(    pagerefs = [])Tj
+()'
+(    frame_groups = tuple\(ngroup\(lines, lines_per_frame\)\))Tj
+()'
+(    )Tj
+/F2 8 Tf
+(if)Tj
+/F1 8 Tf
+( twoup:)Tj
+()'
+(        frames_per_page = 2)Tj
+()'
+(    )Tj
+/F2 8 Tf
+(else)Tj
+/F1 8 Tf
+(:)Tj
+()'
+(        frames_per_page = 1)Tj
+()'
+(        )Tj
+()'
+(    page_groups = tuple\(ngroup\(frame_groups, frames_per_page\)\))Tj
+()'
+(    nframes = len\(frame_groups\))Tj
+()'
+(    npages = len\(page_groups\))Tj
+()'
+(    ngroups = nframes)Tj
+()'
+()'
+(    iframe = 0)Tj
+()'
+(    )Tj
+/F2 8 Tf
+(for)Tj
+/F1 8 Tf
+( i, page_group in enumerate\(page_groups\):)Tj
+()'
+(        cref = make_ref\(refs\))Tj
+()'
+(        xref[cref] = f.tell\(\))Tj
+()'
+()'
+(        out\()Tj
+/F4 8 Tf
+("%i %i obj\\n")Tj
+/F1 8 Tf
+( % cref\))Tj
+()'
+(        lref = make_ref\(refs\))Tj
+()'
+()'
+(        out\()Tj
+/F4 8 Tf
+("<< /Length %i % i R>>\\n")Tj
+/F1 8 Tf
+( % lref\))Tj
+()'
+(        out\()Tj
+/F4 8 Tf
+('stream\\n')Tj
+/F1 8 Tf
+(\))Tj
+()'
+(        pos = f.tell\(\))Tj
+()'
+()'
+(        out\()Tj
+/F4 8 Tf
+("q\\n")Tj
+/F1 8 Tf
+(\) )Tj
+/F4 8 Tf
+(# save state)Tj
+()'
+/F1 8 Tf
+(        )Tj
+/F2 8 Tf
+(if)Tj
+/F1 8 Tf
+( twoup:)Tj
+()'
+(            out\()Tj
+/F4 8 Tf
+("0 1 -1 0 %s 0 cm\\n")Tj
+/F1 8 Tf
+( % pagesize[0]\))Tj
+()'
+(        d = 9)Tj
+()'
+(        x, y = outer_frame[:2])Tj
+()'
+(        out\()Tj
+/F4 8 Tf
+("BT /F5 %i Tf %i %i Td \(%s\)Tj ET\\n")Tj
+/F1 8 Tf
+( % \\)Tj
+()'
+(            \(d, x, y-d-2, )Tj
+/F4 8 Tf
+('Printed by ')Tj
+/F1 8 Tf
+(+username\)\))Tj
+()'
+(        x += outer_frame[2])Tj
+()'
+(        right_aligned\(x, y-d-2, date, HELVETICA, d\))Tj
+()'
+()'
+(        )Tj
+()'
+(        )Tj
+/F2 8 Tf
+(for)Tj
+/F1 8 Tf
+( j, frame_group in enumerate\(page_group\):)Tj
+()'
+(            iframe += 1)Tj
+()'
+(            )Tj
+/F2 8 Tf
+(if)Tj
+/F1 8 Tf
+( twoup:)Tj
+()'
+(                )Tj
+/F2 8 Tf
+(if)Tj
+/F1 8 Tf
+( j == 0:)Tj
+()'
+(                    frame = left_frame)Tj
+()'
+(                )Tj
+/F2 8 Tf
+(else)Tj
+/F1 8 Tf
+(:)Tj
+()'
+(                    frame = right_frame)Tj
+()'
+(                )Tj
+()'
+(            )Tj
+/F2 8 Tf
+(if)Tj
+/F1 8 Tf
+( 0:)Tj
+()'
+(                )Tj
+/F2 8 Tf
+(print)Tj
+/F1 8 Tf
+( frame            )Tj
+()'
+ET
+Q
+
+endstream
+endobj
+10 0 obj
+6299
+endobj
+11 0 obj
+<< /Parent 2 0 R /Resources << /Font <<         /F1 << /Encoding /WinAnsiEncoding /Type /Font 
+               /BaseFont /Courier 
+               /Subtype /Type1 >>        /F2 << /Encoding /WinAnsiEncoding /Type /Font 
+               /BaseFont /Courier-Bold 
+               /Subtype /Type1 >>        /F3 << /Encoding /WinAnsiEncoding /Type /Font 
+               /BaseFont /Times 
+               /Subtype /Type1 >>        /F4 << /Encoding /WinAnsiEncoding /Type /Font 
+               /BaseFont /Courier-Oblique 
+               /Subtype /Type1 >>        /F5 << /Encoding /WinAnsiEncoding /Type /Font 
+               /BaseFont /Helvetica 
+               /Subtype /Type1 >>        /F6 << /Encoding /WinAnsiEncoding /Type /Font 
+               /BaseFont /Helvetica-Bold 
+               /Subtype /Type1 >>        >>
+      >>
+      /MediaBox [ 0 0 595.28 841.89 ]
+      /Rotate 90
+
+      /Type /Page /ProcSet [/PDF /Text /ImageB /ImageC /ImageI] 
+      /Contents 9 0 R 
+    >>
+endobj
+12 0 obj
+<< /Length 13  0 R>>
+stream
+q
+0 1 -1 0 595.28 0 cm
+BT /F5 9 Tf 25 29 Td (Printed by ecker)Tj ET
+BT /F5 9 Tf 748 29 Td (Mar 25, 20 22:37)Tj ET
+q
+23 38 394 499 re
+S
+0.95 0.95 0.95 rg
+23 537 394 17 re
+f
+Q
+23 537 394 17 re
+S
+BT /F5 9 Tf 32 541 Td (Mar 25, 20 22:18)Tj ET
+BT /F6 12 Tf 190 541 Td (src2pdf.py)Tj ET
+BT /F5 9 Tf 372 541 Td (Page 7/9)Tj ET
+BT
+25 527.28 Td
+8 TL
+/F1 8 Tf
+(                out\()Tj
+/F4 8 Tf
+("%i %i %i %i re\\nS\\n")Tj
+/F1 8 Tf
+( % frame\))Tj
+()'
+(                out\()Tj
+/F4 8 Tf
+("%i %i %i %i re\\nS\\n")Tj
+/F1 8 Tf
+( % \(frame[:2]+\(10, 10\)\)\))Tj
+()'
+()'
+(            r = grow\(frame, 2\))Tj
+()'
+(            out\()Tj
+/F4 8 Tf
+("q\\n")Tj
+/F1 8 Tf
+(\) )Tj
+/F4 8 Tf
+(# save state)Tj
+()'
+/F1 8 Tf
+(            out\()Tj
+/F4 8 Tf
+("%i %i %i %i re\\nS\\n")Tj
+/F1 8 Tf
+( % r\))Tj
+()'
+(            x, y, w, h = r)Tj
+()'
+(            d = 9 )Tj
+/F4 8 Tf
+(# font size header)Tj
+()'
+/F1 8 Tf
+(            out\()Tj
+/F4 8 Tf
+("0.95 0.95 0.95 rg\\n")Tj
+/F1 8 Tf
+(\))Tj
+()'
+(            out\()Tj
+/F4 8 Tf
+("%i %i %i %i re\\nf\\n")Tj
+/F1 8 Tf
+( % \(x, y+h, w, 1.9*d\)\))Tj
+()'
+(            out\()Tj
+/F4 8 Tf
+("Q\\n")Tj
+/F1 8 Tf
+(\) )Tj
+/F4 8 Tf
+(# restore state)Tj
+()'
+/F1 8 Tf
+(            out\()Tj
+/F4 8 Tf
+("%i %i %i %i re\\nS\\n")Tj
+/F1 8 Tf
+( % \(x, y+h, w, 1.9*d\)\))Tj
+()'
+(            out\()Tj
+/F4 8 Tf
+("BT /F5 %i Tf %i %i Td \(%s\)Tj ET\\n")Tj
+/F1 8 Tf
+( % \\)Tj
+()'
+(                \(d, x+d, y+h+0.5*d, file_date\)\))Tj
+()'
+(            centered\(x+0.5*w, y+h+0.5*d, infilename, HELVETICA_BOLD, d+3\))Tj
+()'
+(            )Tj
+()'
+(            s = )Tj
+/F4 8 Tf
+("Page %i/%i")Tj
+/F1 8 Tf
+( % \(iframe, ngroups\))Tj
+()'
+(            right_aligned\(x+w-d, y+h+0.5*d, s, HELVETICA, d\))Tj
+()'
+(            )Tj
+()'
+(            out\()Tj
+/F4 8 Tf
+("BT\\n")Tj
+/F1 8 Tf
+(\))Tj
+()'
+(            x0, y0 = frame[:2])Tj
+()'
+(            y0 += frame[3]-fontsize)Tj
+()'
+(            out\()Tj
+/F4 8 Tf
+("%s %s Td\\n")Tj
+/F1 8 Tf
+( % \(x0, y0\)\))Tj
+()'
+(            out\()Tj
+/F4 8 Tf
+("%i TL\\n")Tj
+/F1 8 Tf
+( % fontsize\))Tj
+()'
+()'
+(            lastfontinfo = )Tj
+/F2 8 Tf
+(None)Tj
+()'
+/F1 8 Tf
+(            )Tj
+/F2 8 Tf
+(for)Tj
+/F1 8 Tf
+( l in frame_group:)Tj
+()'
+(                )Tj
+/F4 8 Tf
+(#print l)Tj
+()'
+/F1 8 Tf
+(                )Tj
+/F2 8 Tf
+(for)Tj
+/F1 8 Tf
+( s, fontinfo in l:)Tj
+()'
+(                    )Tj
+/F2 8 Tf
+(if)Tj
+/F1 8 Tf
+( fontinfo != lastfontinfo:)Tj
+()'
+(                        font, size = fontinfo)Tj
+()'
+(                        fontname = fontnames[font])Tj
+()'
+(                        out\()Tj
+/F4 8 Tf
+("/%s %s Tf\\n")Tj
+/F1 8 Tf
+( % \(fontname, size\)\))Tj
+()'
+(                        lastfontinfo = fontinfo)Tj
+()'
+(                    out\()Tj
+/F4 8 Tf
+("\(%s\)Tj\\n")Tj
+/F1 8 Tf
+( % quote\(s\).encode\()Tj
+/F4 8 Tf
+('latin-1')Tj
+/F1 8 Tf
+(\)\))Tj
+()'
+(                out\()Tj
+/F4 8 Tf
+("\(\)'\\n")Tj
+/F1 8 Tf
+(\))Tj
+()'
+(            out\()Tj
+/F4 8 Tf
+("ET\\n")Tj
+/F1 8 Tf
+(\))Tj
+()'
+(        out\()Tj
+/F4 8 Tf
+("Q\\n")Tj
+/F1 8 Tf
+(\) )Tj
+/F4 8 Tf
+(# restore state)Tj
+()'
+()'
+/F1 8 Tf
+(        length = f.tell\(\)-pos)Tj
+()'
+(        out\()Tj
+/F4 8 Tf
+("\\nendstream\\n")Tj
+/F1 8 Tf
+(\))Tj
+()'
+(        out\()Tj
+/F4 8 Tf
+("endobj\\n")Tj
+/F1 8 Tf
+(\))Tj
+()'
+()'
+(        xref[lref] = f.tell\(\)    )Tj
+()'
+(        out\()Tj
+/F4 8 Tf
+("%i %i obj\\n")Tj
+/F1 8 Tf
+( % lref\))Tj
+()'
+(        out\()Tj
+/F4 8 Tf
+("%i\\n")Tj
+/F1 8 Tf
+( % length\))Tj
+()'
+(        out\()Tj
+/F4 8 Tf
+("endobj\\n")Tj
+/F1 8 Tf
+(\))Tj
+()'
+()'
+(        )Tj
+/F4 8 Tf
+(# directly after the content: write the page)Tj
+()'
+/F1 8 Tf
+(        pref = make_ref\(refs\))Tj
+()'
+(        pagerefs.append\(pref\))Tj
+()'
+()'
+(        xref[pref] = f.tell\(\)    )Tj
+()'
+(        out\()Tj
+/F4 8 Tf
+("%i %i obj\\n")Tj
+/F1 8 Tf
+( % pref\))Tj
+()'
+(        )Tj
+/F2 8 Tf
+(if)Tj
+/F1 8 Tf
+( twoup:)Tj
+()'
+(            rotate = )Tj
+/F4 8 Tf
+("/Rotate 90\\n")Tj
+()'
+/F1 8 Tf
+(        )Tj
+/F2 8 Tf
+(else)Tj
+/F1 8 Tf
+(:)Tj
+()'
+(            rotate = )Tj
+/F4 8 Tf
+("")Tj
+()'
+()'
+/F1 8 Tf
+(        out\()Tj
+/F4 8 Tf
+("<< /Parent 2 0 R /Resources << /Font << ")Tj
+/F1 8 Tf
+(\))Tj
+()'
+(        )Tj
+/F2 8 Tf
+(for)Tj
+/F1 8 Tf
+( font, key in sorted\(fontnames.items\(\), key=)Tj
+/F2 8 Tf
+(lambda)Tj
+/F1 8 Tf
+( x:x[1]\) :)Tj
+()'
+ET
+q
+423 38 394 499 re
+S
+0.95 0.95 0.95 rg
+423 537 394 17 re
+f
+Q
+423 537 394 17 re
+S
+BT /F5 9 Tf 432 541 Td (Mar 25, 20 22:18)Tj ET
+BT /F6 12 Tf 591 541 Td (src2pdf.py)Tj ET
+BT /F5 9 Tf 773 541 Td (Page 8/9)Tj ET
+BT
+425.945 527.28 Td
+8 TL
+/F1 8 Tf
+(            out\()Tj
+/F4 8 Tf
+("""        /%s << /Encoding /WinAnsiEncoding /Type /Font )Tj
+()'
+(               /BaseFont /%s )Tj
+()'
+(               /Subtype /Type1 >>""")Tj
+/F1 8 Tf
+( % \(key, font.basefont\)\))Tj
+()'
+(        out\()Tj
+/F4 8 Tf
+("""        >>)Tj
+()'
+(      >>)Tj
+()'
+(      /MediaBox [ 0 0 595.28 841.89 ])Tj
+()'
+(      %s)Tj
+()'
+(      /Type /Page /ProcSet [/PDF /Text /ImageB /ImageC /ImageI] )Tj
+()'
+(      /Contents %i %i R )Tj
+()'
+(    >>)Tj
+()'
+(endobj\\n""")Tj
+/F1 8 Tf
+( % \(\(rotate,\)+cref\)\))Tj
+()'
+(        )Tj
+()'
+(    )Tj
+/F4 8 Tf
+(# finally writing the root pages \(object 2\))Tj
+()'
+/F1 8 Tf
+(    kids = [)Tj
+/F4 8 Tf
+("%i %i R")Tj
+/F1 8 Tf
+( % ref )Tj
+/F2 8 Tf
+(for)Tj
+/F1 8 Tf
+( ref in pagerefs])Tj
+()'
+(    s = )Tj
+/F4 8 Tf
+(" ")Tj
+/F1 8 Tf
+(.join\(kids\))Tj
+()'
+(    )Tj
+()'
+(    xref[\(2, 0\)] = f.tell\(\))Tj
+()'
+(    out\()Tj
+/F4 8 Tf
+("2 0 obj\\n")Tj
+/F1 8 Tf
+(\))Tj
+()'
+(    w, h = pagesize)Tj
+()'
+(    out\(dict\()Tj
+()'
+(        Type=)Tj
+/F4 8 Tf
+('/Pages')Tj
+/F1 8 Tf
+(, Kids=kids, Count=len\(kids\),)Tj
+()'
+(        MediaBox=[0, 0, pagesize[0], pagesize[1]]\)\))Tj
+()'
+(    out\()Tj
+/F4 8 Tf
+("endobj\\n\\n")Tj
+/F1 8 Tf
+(\))Tj
+()'
+(    )Tj
+()'
+(    )Tj
+/F4 8 Tf
+(# write the xref table)Tj
+()'
+/F1 8 Tf
+(    startxref = f.tell\(\))Tj
+()'
+(    out\()Tj
+/F4 8 Tf
+('xref\\n')Tj
+/F1 8 Tf
+(\))Tj
+()'
+(    out\()Tj
+/F4 8 Tf
+('0 %i\\n')Tj
+/F1 8 Tf
+( % \(len\(xref\)+1\)\))Tj
+()'
+(    out\()Tj
+/F4 8 Tf
+('%010i')Tj
+/F1 8 Tf
+( % 0\); out\()Tj
+/F4 8 Tf
+(' 65535')Tj
+/F1 8 Tf
+(\); out\()Tj
+/F4 8 Tf
+(' f\\n')Tj
+/F1 8 Tf
+(\))Tj
+()'
+(    )Tj
+/F2 8 Tf
+(for)Tj
+/F1 8 Tf
+( ref in sorted\(xref.keys\(\)\):)Tj
+()'
+(        pos = xref[ref])Tj
+()'
+(        version = ref[1])Tj
+()'
+(        out\()Tj
+/F4 8 Tf
+('%010i')Tj
+/F1 8 Tf
+( % pos\); out\()Tj
+/F4 8 Tf
+(' %05i')Tj
+/F1 8 Tf
+( % version\); out\()Tj
+/F4 8 Tf
+(' n\\n')Tj
+/F1 8 Tf
+(\))Tj
+()'
+()'
+(    )Tj
+/F4 8 Tf
+(# write trailer)Tj
+()'
+/F1 8 Tf
+(    out\()Tj
+/F4 8 Tf
+('trailer\\n')Tj
+/F1 8 Tf
+(\))Tj
+()'
+(    out\(dict\(Root=)Tj
+/F4 8 Tf
+('1 0 R')Tj
+/F1 8 Tf
+(, Size=len\(xref\)+1\)\))Tj
+()'
+(    out\()Tj
+/F4 8 Tf
+('startxref\\n')Tj
+/F1 8 Tf
+(\))Tj
+()'
+(    out\()Tj
+/F4 8 Tf
+('%i\\n')Tj
+/F1 8 Tf
+( % startxref\))Tj
+()'
+(    out\()Tj
+/F4 8 Tf
+('%%EOF\\n')Tj
+/F1 8 Tf
+(\))Tj
+()'
+(    )Tj
+()'
+()'
+/F2 8 Tf
+(def)Tj
+/F1 8 Tf
+( startfile\(filename\):)Tj
+()'
+(    import sys, subprocess)Tj
+()'
+(    )Tj
+/F2 8 Tf
+(if)Tj
+/F1 8 Tf
+( sys.platform == )Tj
+/F4 8 Tf
+("win32")Tj
+/F1 8 Tf
+(:)Tj
+()'
+(        os.startfile\(filename\))Tj
+()'
+(    )Tj
+/F2 8 Tf
+(else)Tj
+/F1 8 Tf
+(:)Tj
+()'
+(        opener =)Tj
+/F4 8 Tf
+("open")Tj
+/F1 8 Tf
+( )Tj
+/F2 8 Tf
+(if)Tj
+/F1 8 Tf
+( sys.platform == )Tj
+/F4 8 Tf
+("darwin")Tj
+/F1 8 Tf
+( )Tj
+/F2 8 Tf
+(else)Tj
+/F1 8 Tf
+( )Tj
+/F4 8 Tf
+("xdg-open")Tj
+()'
+/F1 8 Tf
+(        subprocess.call\([opener, filename]\))Tj
+()'
+()'
+(from entrypoint2 import entrypoint)Tj
+()'
+(@entrypoint)Tj
+()'
+/F2 8 Tf
+(def)Tj
+/F1 8 Tf
+( main\(srcfile, outfile=)Tj
+/F2 8 Tf
+(None)Tj
+/F1 8 Tf
+(, dont_view=)Tj
+/F2 8 Tf
+(False)Tj
+/F1 8 Tf
+(, single_page=)Tj
+/F2 8 Tf
+(False)Tj
+/F1 8 Tf
+(,)Tj
+()'
+(         fontsize=)Tj
+/F2 8 Tf
+(None)Tj
+/F1 8 Tf
+(\):)Tj
+()'
+(    twoup = not single_page)Tj
+()'
+()'
+(    )Tj
+/F2 8 Tf
+(if)Tj
+/F1 8 Tf
+( fontsize is )Tj
+/F2 8 Tf
+(None)Tj
+/F1 8 Tf
+(:)Tj
+()'
+(        )Tj
+/F2 8 Tf
+(if)Tj
+/F1 8 Tf
+( twoup:)Tj
+()'
+(            fontsize = 8)Tj
+()'
+(        )Tj
+/F2 8 Tf
+(else)Tj
+/F1 8 Tf
+(:)Tj
+()'
+(            fontsize = 10)Tj
+()'
+ET
+Q
+
+endstream
+endobj
+13 0 obj
+7868
+endobj
+14 0 obj
+<< /Parent 2 0 R /Resources << /Font <<         /F1 << /Encoding /WinAnsiEncoding /Type /Font 
+               /BaseFont /Courier 
+               /Subtype /Type1 >>        /F2 << /Encoding /WinAnsiEncoding /Type /Font 
+               /BaseFont /Courier-Bold 
+               /Subtype /Type1 >>        /F3 << /Encoding /WinAnsiEncoding /Type /Font 
+               /BaseFont /Times 
+               /Subtype /Type1 >>        /F4 << /Encoding /WinAnsiEncoding /Type /Font 
+               /BaseFont /Courier-Oblique 
+               /Subtype /Type1 >>        /F5 << /Encoding /WinAnsiEncoding /Type /Font 
+               /BaseFont /Helvetica 
+               /Subtype /Type1 >>        /F6 << /Encoding /WinAnsiEncoding /Type /Font 
+               /BaseFont /Helvetica-Bold 
+               /Subtype /Type1 >>        >>
+      >>
+      /MediaBox [ 0 0 595.28 841.89 ]
+      /Rotate 90
+
+      /Type /Page /ProcSet [/PDF /Text /ImageB /ImageC /ImageI] 
+      /Contents 12 0 R 
+    >>
+endobj
+15 0 obj
+<< /Length 16  0 R>>
+stream
+q
+0 1 -1 0 595.28 0 cm
+BT /F5 9 Tf 25 29 Td (Printed by ecker)Tj ET
+BT /F5 9 Tf 748 29 Td (Mar 25, 20 22:37)Tj ET
+q
+23 38 394 499 re
+S
+0.95 0.95 0.95 rg
+23 537 394 17 re
+f
+Q
+23 537 394 17 re
+S
+BT /F5 9 Tf 32 541 Td (Mar 25, 20 22:18)Tj ET
+BT /F6 12 Tf 190 541 Td (src2pdf.py)Tj ET
+BT /F5 9 Tf 372 541 Td (Page 9/9)Tj ET
+BT
+25 527.28 Td
+8 TL
+/F1 8 Tf
+(            )Tj
+()'
+(    )Tj
+/F2 8 Tf
+(if)Tj
+/F1 8 Tf
+( outfile is )Tj
+/F2 8 Tf
+(None)Tj
+/F1 8 Tf
+(:)Tj
+()'
+(        base, ext = os.path.splitext\(srcfile\))Tj
+()'
+(        outfile = base+)Tj
+/F4 8 Tf
+('.pdf')Tj
+()'
+/F1 8 Tf
+(        )Tj
+()'
+(    create_pdf\(srcfile, outfile, twoup, fontsize\))Tj
+()'
+(    )Tj
+/F2 8 Tf
+(if)Tj
+/F1 8 Tf
+( not dont_view:)Tj
+()'
+(        startfile\(outfile\))Tj
+()'
+()'
+(    )Tj
+()'
+(        )Tj
+()'
+ET
+Q
+
+endstream
+endobj
+16 0 obj
+787
+endobj
+17 0 obj
+<< /Parent 2 0 R /Resources << /Font <<         /F1 << /Encoding /WinAnsiEncoding /Type /Font 
+               /BaseFont /Courier 
+               /Subtype /Type1 >>        /F2 << /Encoding /WinAnsiEncoding /Type /Font 
+               /BaseFont /Courier-Bold 
+               /Subtype /Type1 >>        /F3 << /Encoding /WinAnsiEncoding /Type /Font 
+               /BaseFont /Times 
+               /Subtype /Type1 >>        /F4 << /Encoding /WinAnsiEncoding /Type /Font 
+               /BaseFont /Courier-Oblique 
+               /Subtype /Type1 >>        /F5 << /Encoding /WinAnsiEncoding /Type /Font 
+               /BaseFont /Helvetica 
+               /Subtype /Type1 >>        /F6 << /Encoding /WinAnsiEncoding /Type /Font 
+               /BaseFont /Helvetica-Bold 
+               /Subtype /Type1 >>        >>
+      >>
+      /MediaBox [ 0 0 595.28 841.89 ]
+      /Rotate 90
+
+      /Type /Page /ProcSet [/PDF /Text /ImageB /ImageC /ImageI] 
+      /Contents 15 0 R 
+    >>
+endobj
+2 0 obj
+<<
+/Count 5 /Kids [5 0 R 8 0 R 11 0 R 14 0 R 17 0 R] /Type /Pages /MediaBox [0 0 595.28 841.89] >>
+endobj
+
+xref
+0 18
+0000000000 65535 f
+0000000015 00000 n
+0000036495 00000 n
+0000000069 00000 n
+0000008642 00000 n
+0000008662 00000 n
+0000009646 00000 n
+0000017354 00000 n
+0000017374 00000 n
+0000018358 00000 n
+0000024711 00000 n
+0000024732 00000 n
+0000025717 00000 n
+0000033640 00000 n
+0000033661 00000 n
+0000034647 00000 n
+0000035489 00000 n
+0000035509 00000 n
+trailer
+<<
+/Root 1 0 R /Size 18 >>
+startxref
+36610
+%%EOF
