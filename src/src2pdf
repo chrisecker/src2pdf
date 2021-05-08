@@ -1,8 +1,8 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding:latin-1 -*-
 
+
 # TODO:
-# - allow selection of encoding
 # - allow selection of lexer
 # - list encodings
 # - list lexers
@@ -61,6 +61,7 @@ class Font:
             w += _w
         return r
 
+unichr = chr
 _widths = {unichr(i) : 600 for i in range(256)}
 COURIER = Font("Type1", "Courier", _widths)
 COURIER_BOLD = Font("Type1", "Courier-Bold", _widths)
@@ -162,18 +163,40 @@ def ngroup(l, n):
         yield r
 
 
-def compute_pieces(filename, fontsize):
+def compute_pieces(filename, fontsize, encoding):
     from pygments.formatter import Formatter
     from pygments.lexers import guess_lexer_for_filename, get_lexer_by_name
     from pygments import token as Token
     from pygments import highlight
 
-    style = {
+    style1 = {
         Token.Keyword : (COURIER_BOLD, fontsize),
-        Token.Name.Builtin.Pseudo : (COURIER_BOLD, fontsize),
+        Token.Keyword.Reserved : (COURIER_BOLD, fontsize),
+        Token.Keyword.Namespace : (COURIER_BOLD, fontsize),
+        #Token.Keyword.Pseudo : (COURIER_BOLD, fontsize),
+        #Token.Name : (COURIER_BOLD, fontsize),
+        Token.Operator : (COURIER_BOLD, fontsize),
+        
         Token.Comment.Single : (COURIER_OBLIQUE, fontsize),
         Token.Comment : (COURIER_OBLIQUE, fontsize),
-        Token.Literal.String : (COURIER_OBLIQUE, fontsize),
+        Token.Literal : (COURIER_OBLIQUE, fontsize),
+        Token.Literal.String.Single : (COURIER_OBLIQUE, fontsize),
+        Token.Literal.String.Double : (COURIER_OBLIQUE, fontsize),
+        Token.Literal.String.Escape : (COURIER_OBLIQUE, fontsize),
+        Token.Literal.String.Interpol : (COURIER_OBLIQUE, fontsize),
+        None : (COURIER, fontsize), # default
+    }
+
+    # optimized for r-code
+    style2 = {
+        #Token.Keyword : (COURIER_BOLD, fontsize),
+        #Token.Keyword.Reserved : (COURIER_BOLD, fontsize),
+        #Token.Keyword.Pseudo : (COURIER_BOLD, fontsize),
+        #Token.Operator : (COURIER_BOLD, fontsize),
+        
+        Token.Comment.Single : (COURIER_OBLIQUE, fontsize),
+        Token.Comment : (COURIER_OBLIQUE, fontsize),
+        Token.Literal : (COURIER_OBLIQUE, fontsize),
         Token.Literal.String.Single : (COURIER_OBLIQUE, fontsize),
         Token.Literal.String.Double : (COURIER_OBLIQUE, fontsize),
         Token.Literal.String.Escape : (COURIER_OBLIQUE, fontsize),
@@ -181,11 +204,12 @@ def compute_pieces(filename, fontsize):
         None : (COURIER, fontsize), # default
     }
     
-    class FontFormatter(Formatter):
-        def format(self, tokensource, outfile, style=style):
+    class FontFormatter1(Formatter):
+        def format(self, tokensource, outfile, style=style1):
             last = None
             l = []
             for token, text in tokensource:
+                #print(token, repr(text))
                 try:
                     fontinfo = style[token]
                 except KeyError:
@@ -197,9 +221,36 @@ def compute_pieces(filename, fontsize):
                     last = fontinfo
             self.pieces = l
 
-    formatter = FontFormatter()
-    src = open(filename, 'r').read()
+    class FontFormatter2(Formatter):
+        def format(self, tokensource, outfile, style=style2):
+            last = None
+            l = []
+            for token, text in tokensource:
+                #print(token, repr(text))
+                stripped = text.strip()
+                if token == Token.Name.Function and stripped in \
+                   ('return', 'for', 'function'):
+                    fontinfo = (COURIER_BOLD, fontsize)
+                elif token == Token.Name and stripped in ('in', ):
+                    fontinfo = (COURIER_BOLD, fontsize)
+                else:
+                    try:
+                        fontinfo = style[token]
+                    except KeyError:
+                        fontinfo = style[None]
+                if fontinfo == last:
+                    l[-1][0] += text
+                else:
+                    l.append([text, fontinfo])
+                    last = fontinfo
+            self.pieces = l
+            
+    src = open(filename, 'r', encoding=encoding).read()
     lexer = guess_lexer_for_filename(filename, src)
+    if lexer.name == 'S':
+        formatter = FontFormatter2()
+    else:
+        formatter = FontFormatter1()        
     highlight(src, lexer, formatter)
     return formatter.pieces
 
@@ -219,8 +270,8 @@ def make_s(obj):
     # Create string representation for obj
     if type(obj) == str:
         return obj
-    if type(obj) == unicode:
-        return obj.encode('latin-1') # XXX add ignore-flag?
+    #if type(obj) == unicode:
+    #    return obj.encode('latin-1') # XXX add ignore-flag?
     if type(obj) == tuple:
         # we always interpret tuples as references!
         return '%i %i R' % obj
@@ -248,9 +299,9 @@ def grow(rect, d):
     return shrink(rect, -d)
 
 
-def create_pdf(infilename, outfilename, twoup, fontsize):
-    pieces = compute_pieces(infilename, fontsize)
-    f = open(outfilename, 'wb')
+def create_pdf(infilename, outfilename, twoup, fontsize, encoding):
+    pieces = compute_pieces(infilename, fontsize, encoding)
+    f = open(outfilename, 'w', encoding='latin-1', errors='ignore')
     t = time.localtime(os.path.getmtime(infilename))
     file_date = time.strftime("%b %d, %y %H:%M", t)
     date = time.strftime("%b %d, %y %H:%M")
@@ -363,7 +414,7 @@ def create_pdf(infilename, outfilename, twoup, fontsize):
                     frame = right_frame
                 
             if 0:
-                print frame            
+                print(frame)            
                 out("%i %i %i %i re\nS\n" % frame)
                 out("%i %i %i %i re\nS\n" % (frame[:2]+(10, 10)))
 
@@ -398,7 +449,7 @@ def create_pdf(infilename, outfilename, twoup, fontsize):
                         fontname = fontnames[font]
                         out("/%s %s Tf\n" % (fontname, size))
                         lastfontinfo = fontinfo
-                    out("(%s)Tj\n" % quote(s).encode('latin-1'))
+                    out("(%s)Tj\n" % quote(s))
                 out("()'\n")
             out("ET\n")
         out("Q\n") # restore state
@@ -469,17 +520,43 @@ endobj\n""" % ((rotate,)+cref))
 
 def startfile(filename):
     import sys, subprocess
-    if sys.platform == "win32":
+    if sys.platform == 'cygwin':
+        opener ="cygstart"
+        subprocess.call([opener, filename])
+    elif sys.platform == "win32":
         os.startfile(filename)
     else:
         opener ="open" if sys.platform == "darwin" else "xdg-open"
         subprocess.call([opener, filename])
 
+
+def guess_encoding(filename):
+    # Das Encoding aus dem BOM ermitteln
+    # https://stackoverrun.com/de/q/3665020
+    import io
+    import chardet
+    import codecs
+
+    bytes = min(32, os.path.getsize(filename))
+    raw = open(filename, 'rb').read(bytes)
+
+    if raw.startswith(codecs.BOM_UTF8):
+        encoding = 'utf-8-sig'
+    else:
+        result = chardet.detect(raw)
+        encoding = result['encoding']
+    return encoding
+
+
+
 from entrypoint2 import entrypoint
 @entrypoint
-def main(srcfile, outfile=None, dont_view=False, single_page=False,
-         fontsize=None):
+def main(srcfile, outfile=None, view=False, single_page=False, fontsize=None,
+         encoding=None):
     twoup = not single_page
+
+    if encoding is None:
+        encoding = guess_encoding(srcfile)
 
     if fontsize is None:
         if twoup:
@@ -491,9 +568,9 @@ def main(srcfile, outfile=None, dont_view=False, single_page=False,
         base, ext = os.path.splitext(srcfile)
         outfile = base+'.pdf'
         
-    create_pdf(srcfile, outfile, twoup, fontsize)
-    if not dont_view:
-        startfile(outfile)
+    create_pdf(srcfile, outfile, twoup, fontsize, encoding)
 
+    if view:
+        startfile(outfile)
     
         
